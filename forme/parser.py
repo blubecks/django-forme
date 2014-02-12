@@ -8,10 +8,12 @@ from forme.nodes import FormeNode
 
 
 class FormeParser(object):
+    valid_tags = 'forme fieldset row label field'.split()
+
     def __init__(self, parser, token):
         self.parser = parser
         self.parts = token.split_contents()
-        self.tag_name = self.parts.pop()
+        self.tag_name = self.parts.pop(0)
 
     def parse(self):
         parts = copy.copy(self.parts)
@@ -25,7 +27,7 @@ class FormeParser(object):
     def parse_action(self, parts):
         try:
             action = parts[-1]
-        except ValueError:
+        except IndexError:
             action = 'default'
         else:
             if action in ['using', 'replace']:
@@ -41,7 +43,8 @@ class FormeParser(object):
     def parse_target(self, parts):
         target = []
         for part in parts:
-            target.extend(part.split(' '))
+            # Could be string of space-separated names
+            target.extend(part.strip('"\'').split(' '))
 
         if not target:
             msg = "Missing %s target.".format(self.tag_name)
@@ -52,5 +55,5 @@ class FormeParser(object):
     def parse_nodelist(self):
         end_node = ''.join(['end', self.tag_name])
         nodelist = self.parser.parse((end_node,))
-        self.parser.delete_frist_node()
+        self.parser.delete_first_token()
         return nodelist
