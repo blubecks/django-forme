@@ -45,7 +45,7 @@ string separated with spaces (eg. `{% field "username password" %}`).
 
 Three actions are possible:
 
-1. Default
+### 1. Default
  - when no action is specified, it renders target using default templates
 
 ```html+django
@@ -56,7 +56,7 @@ Three actions are possible:
 {% field "finally" %}
 ```
 
-2. `replace`
+### 2. `replace`
  - pair tag, ended with `{% end<level %}` (eg. `{% endfield %}`)
  - only elements specified will be replaced in default template.
  - it can contain other *forme* tags only, no html+django allowed
@@ -70,10 +70,10 @@ Three actions are possible:
 {% endform %}
 ```
 
-3. `using`
+### 3. `using`
  - also pair tag
  - overrides default template
- - can contain html+django
+ - can contain html
 
 ```html+django
 {% forme form using %}
@@ -99,3 +99,18 @@ Tags can be nested:
 
 … and so on. Work on progress, ping me if interested, poke me if I'm reinventing
 wheel of kick me if you think this approach is totally wrong.
+
+
+Other apps dealing with forms
+=============================
+
+Listed in order I discovered them:
+
+1. [django-crispy-forms](https://github.com/maraujop/django-crispy-forms)
+   Most of configuration is done in Layout in python code. Nope.
+
+2. [django-widget-tweaks](https://github.com/kmike/django-widget-tweaks)
+   Nice, but it deals mostly with fields.
+
+3. [django-floppyforms](https://github.com/brutasse/django-floppyforms)
+   Close, but still there's no simple way to override a tiny bit of form.
