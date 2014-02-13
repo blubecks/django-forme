@@ -1,0 +1,16 @@
+language: python
+python:
+  - "2.6"
+  - "2.7"
+  - "3.2"
+  - "3.3"
+
+env:
+  - DJANGO_VERSION=1.6
+  - DJANGO_VERSION=1.7
+
+install:
+  - pip install --use-mirrors Django<$DJANGO_VERSION
+  - pip install --use-mirrors .
+
+script: py.test
