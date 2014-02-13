@@ -2,11 +2,11 @@
 from __future__ import unicode_literals
 
 from setuptools import setup, find_packages
-
+from forme import __VERSION__
 
 setup(
     name='forme',
-    version='0.1',
+    version=__VERSION__,
     license='MIT',
 
     author='Tomáš Ehrlich',
