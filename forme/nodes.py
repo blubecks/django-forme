@@ -4,35 +4,45 @@ from __future__ import unicode_literals
 from django import template
 
 
-class FormeNode(template.Node):
+class FormeNodeBase(template.Node):
+    def __init__(self, target, action, nodelist):
+        self.target = target
+        self.action = action
+        self.nodelist = nodelist
+
+    def render(self, context):
+        pass
+
+
+class FormeNode(FormeNodeBase):
     pass
 
 
-class FieldsetNode(template.Node):
+class FieldsetNode(FormeNodeBase):
     pass
 
 
-class RowNode(template.Node):
+class RowNode(FormeNodeBase):
     pass
 
 
-class LabelNode(template.Node):
+class LabelNode(FormeNodeBase):
     pass
 
 
-class FieldNode(template.Node):
+class FieldNode(FormeNodeBase):
     pass
 
 
-class HiddenFieldsNode(template.Node):
+class HiddenFieldsNode(FormeNodeBase):
     pass
 
 
-class ErrorsNode(template.Node):
+class ErrorsNode(FormeNodeBase):
     pass
 
 
-class FieldErrorsNode(template.Node):
+class FieldErrorsNode(FormeNodeBase):
     pass
 
 
