@@ -9,11 +9,21 @@ from forme.nodes import FormeNode
 
 class FormeParser(object):
     valid_tags = 'forme fieldset row label field'.split()
+    common_actions = 'exclude using replace template'.split()
 
     def __init__(self, parser, token):
         self.parser = parser
         self.parts = token.split_contents()
         self.tag_name = self.parts.pop(0)
+
+    @property
+    def valid_actions(self):
+        actions = self.common_actions
+
+        if self.tag_name == 'field':
+            actions.append('hide')
+
+        return actions
 
     def parse(self):
         parts = copy.copy(self.parts)

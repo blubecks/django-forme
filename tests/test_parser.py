@@ -15,6 +15,12 @@ def parse_template(content):
 
 
 class TestFormeParse:
+    def test_valid_actions(self, forme):
+        assert 'hide' not in forme.valid_actions
+
+        forme.tag_name = 'field'
+        assert 'hide' in forme.valid_actions
+
     def test_no_target(self, node_mock):
         parser, token = parse_template('{% forme %}')
         with pytest.raises(template.TemplateSyntaxError):
