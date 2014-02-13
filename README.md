@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/elvard/django-forme.png?branch=master)](https://travis-ci.org/elvard/django-forme)
+
 Django forme
 ============
 
