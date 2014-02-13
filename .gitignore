@@ -1,4 +1,10 @@
 *.py[oc]
 
+# Build and test files
+dist/
+.tox/
+.pip-cache/
+*.egg-info/
+
 # PyCharm project dir
 .idea/
