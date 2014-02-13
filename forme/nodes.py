@@ -55,12 +55,12 @@ node_classes = {
     'hiddenfields': HiddenFieldsNode,
     'errors': ErrorsNode,
     'fielderrors': FieldErrorsNode,
-    }
+}
 
 
 def node_factory(tag_name, *args, **kwargs):
     try:
         return node_classes[tag_name](*args, **kwargs)
     except KeyError:
-        raise KeyError('Missing node class mapping for tag name {}'
-                       .format(tag_name))
+        raise KeyError('Missing node class mapping for tag name {name}'
+                       .format(name=tag_name))
