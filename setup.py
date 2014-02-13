@@ -23,5 +23,6 @@ setup(
     tests_require=[
         'mock',
         'pytest',
+        'pytest-django',
     ]
 )

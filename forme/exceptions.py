@@ -1,0 +1,2 @@
+class FormeInvalidTemplate(Exception):
+    pass
