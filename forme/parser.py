@@ -4,11 +4,12 @@ from __future__ import unicode_literals
 import copy
 from django import template
 
-from forme.nodes import FormeNode
+from forme.nodes import node_factory
 
 
 class FormeParser(object):
-    valid_tags = 'forme fieldset row label field'.split()
+    valid_tags = ('forme fieldset row label field hiddenfields'
+                  ' errors fielderrors'.split())
     common_actions = 'exclude using replace template'.split()
 
     def __init__(self, parser, token):
@@ -32,7 +33,7 @@ class FormeParser(object):
 
         nodelist = self.parse_nodelist() if paired else []
 
-        return FormeNode(self.tag_name, target, action, nodelist)
+        return node_factory(self.tag_name, target, action, nodelist)
 
     def parse_action(self, parts):
         try:

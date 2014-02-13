@@ -12,7 +12,7 @@ from forme.parser import FormeParser
 @pytest.fixture
 def node_mock(request):
     m = Mock()
-    p = patch('forme.parser.FormeNode', m)
+    p = patch('forme.parser.node_factory', m)
     p.start()
     request.addfinalizer(p.stop)
     return m
