@@ -54,8 +54,14 @@ class FormeParser(object):
     def parse_target(self, parts):
         target = []
         for part in parts:
-            # Could be string of space-separated names
-            target.extend(part.strip('"\'').split(' '))
+            if ' ' in part:
+                # Only string can contain a space. Strip quotes, split strings
+                # and surround them with quotes so they resolve properly later.
+                stripped_parts = part.strip('"\'').split(' ')
+                target.extend(('"{0}"'.format(p) for p in stripped_parts))
+            else:
+                # Either variable or string with single name
+                target.append(part)
 
         if not target:
             msg = "Missing %s target.".format(self.tag_name)

@@ -34,9 +34,9 @@ class TestFormeParse:
     def test_parse_target(self, forme):
         assert forme.parse_target(['form']) == ['form']
         assert forme.parse_target(['form1', 'form2']) == ['form1', 'form2']
-        assert forme.parse_target(['"form1 form2"']) == ['form1', 'form2']
+        assert forme.parse_target(['"form1 form2"']) == ['"form1"', '"form2"']
         assert forme.parse_target(['"form1 form2"', 'form3']) \
-                == ['form1', 'form2', 'form3']
+                == ['"form1"', '"form2"', 'form3']
 
     def test_parse_action(self, forme):
         assert forme.parse_action(['using']) == ('using', True)
