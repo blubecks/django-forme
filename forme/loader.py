@@ -38,9 +38,17 @@ def preload_styles(styles_config=None):
     # return {name: load_style(tmpl) for name, tmpl in styles_config.items()}
     styles = {}
     for name, tmpl in styles_config.items():
-        styles[name] = load_style(tmpl)
+        styles[name] = SimpleLazyObject(lambda: load_style(tmpl))
     return styles
 
 
+def get_default_style(styles_config=None):
+    if not styles_config:
+        styles_config = settings.FORME_STYLES
+    else:
+        styles_config = styles
+    return styles_config[settings.FORME_DEFAULT_STYLE]
+
+
 # Needs to be lazy object since template tags aren't loaded yet.
-styles = SimpleLazyObject(preload_styles)
+styles = preload_styles()

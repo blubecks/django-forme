@@ -40,5 +40,13 @@ def test_load_style_missing_tag():
 
 
 def test_preload_styles_invalid_template():
+    styles = preload_styles({'default': 'unknown/template'})
     with pytest.raises(TemplateDoesNotExist):
-        preload_styles({'default': 'unknown/template'})
+        # Force evaluation on lazy object
+        True in styles['default']
+
+
+def test_preload_styles():
+    styles = preload_styles()
+    for node in styles.values():
+        assert isinstance(node, FormeNode)
