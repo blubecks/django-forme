@@ -22,12 +22,14 @@ class TestFormeParse:
         assert 'hide' in forme.valid_actions
 
     def test_no_target(self, forme):
-        assert forme.parse_target([]) == 'default'
-
-    def test_action_no_target(self, node_mock):
-        parser, token = parse_template('{% forme using %}')
+        parser, token = parse_template('{% forme %}')
         with pytest.raises(template.TemplateSyntaxError):
             FormeParser(parser, token).parse()
+
+    def test_action_no_target(self, node_mock):
+        parser, token = parse_template('{% forme using %}{% endforme %}')
+        FormeParser(parser, token).parse()
+        node_mock.assert_called_once_with('forme', [], 'using', [])
 
     def test_parse_target(self, forme):
         assert forme.parse_target(['form']) == ['form']
@@ -45,11 +47,13 @@ class TestFormeParse:
         parser, token = parse_template('{% forme form using %}{% endforme %}')
         FormeParser(parser, token).parse()
         node_mock.assert_called_once_with('forme', ['form'], 'using', [])
+        # Fourth argument of first call
         assert node_mock.call_args[0][3] == []
 
     def test_parse_paired(self, node_mock):
         tpl = '{% forme form using %}{{ test }}{% endforme %}'
         parser, token = parse_template(tpl)
         FormeParser(parser, token).parse()
+        # Fourth argument of first call
         assert node_mock.call_args[0][3] != []
 
