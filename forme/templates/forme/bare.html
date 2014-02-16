@@ -23,7 +23,7 @@
     {% endfor %}
   {% endhiddenfields %}
 
-  {% errors %}
+  {% errors using %}
     {% comment %}
     Template for rendering non-field errors.
 
@@ -52,7 +52,7 @@
        - field: Actual field to be rendered.
       {% endcomment %}
 
-      {% fielderror %}
+      {% fielderrors using %}
         {% comment %}
         Template for rendering field errors.
 
@@ -63,7 +63,7 @@
          - errors: Alias to field.errors
         {% endcomment %}
         {{ errors }}
-      {% endfielderror %}
+      {% endfielderrors %}
 
       {% label using %}
         {% comment %}
