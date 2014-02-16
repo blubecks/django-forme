@@ -43,7 +43,7 @@ def test_preload_styles_invalid_template():
     styles = preload_styles({'default': 'unknown/template'})
     with pytest.raises(TemplateDoesNotExist):
         # Force evaluation on lazy object
-        True in styles['default']
+        bool(styles['default'])
 
 
 def test_preload_styles():
