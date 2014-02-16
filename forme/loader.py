@@ -34,7 +34,12 @@ def preload_styles(styles_config=None):
     if not styles_config:
         styles_config = settings.FORME_STYLES
 
-    return {name: load_style(tmpl) for name, tmpl in styles_config.items()}
+    # Replace when Py2.6 won't be supported
+    # return {name: load_style(tmpl) for name, tmpl in styles_config.items()}
+    styles = {}
+    for name, tmpl in styles_config.items():
+        styles[name] = load_style(tmpl)
+    return styles
 
 
 # Needs to be lazy object since template tags aren't loaded yet.
