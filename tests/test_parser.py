@@ -21,10 +21,8 @@ class TestFormeParse:
         forme.tag_name = 'field'
         assert 'hide' in forme.valid_actions
 
-    def test_no_target(self, node_mock):
-        parser, token = parse_template('{% forme %}')
-        with pytest.raises(template.TemplateSyntaxError):
-            FormeParser(parser, token).parse()
+    def test_no_target(self, forme):
+        assert forme.parse_target([]) == 'default'
 
     def test_action_no_target(self, node_mock):
         parser, token = parse_template('{% forme using %}')

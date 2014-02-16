@@ -64,8 +64,7 @@ class FormeParser(object):
                 target.append(part)
 
         if not target:
-            msg = "Missing %s target.".format(self.tag_name)
-            raise template.TemplateSyntaxError(msg)
+            target = "default"
 
         return target
 
