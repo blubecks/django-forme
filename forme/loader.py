@@ -2,7 +2,9 @@
 from __future__ import unicode_literals
 
 from django.template import Template, loader
+from django.utils.functional import SimpleLazyObject
 
+from forme import settings
 from forme.exceptions import FormeInvalidTemplate
 from forme.nodes import FormeNode
 
@@ -26,3 +28,14 @@ def load_style(template_name):
     forme_node = forme_node[0]
 
     return forme_node
+
+
+def preload_styles(styles_config=None):
+    if not styles_config:
+        styles_config = settings.FORME_STYLES
+
+    return {name: load_style(tmpl) for name, tmpl in styles_config.items()}
+
+
+# Needs to be lazy object since template tags aren't loaded yet.
+styles = SimpleLazyObject(preload_styles)

@@ -2,11 +2,11 @@
 from __future__ import unicode_literals
 
 import pytest
-from django.template import Template
+from django.template import Template, TemplateDoesNotExist
 
 from forme.exceptions import FormeInvalidTemplate
 from forme.nodes import FormeNode
-from forme.loader import load_style
+from forme.loader import load_style, preload_styles
 
 
 def test_load_style():
@@ -37,3 +37,8 @@ def test_load_style_missing_tag():
 
     with pytest.raises(FormeInvalidTemplate):
         load_style(template)
+
+
+def test_preload_styles_invalid_template():
+    with pytest.raises(TemplateDoesNotExist):
+        preload_styles({'default': 'unknown/template'})
