@@ -1,0 +1,94 @@
+{% load forme %}
+
+{# Binding of Django forms attributes to Forme. #}
+{% forme using %}
+  {% comment %}
+  Template for rendering whole forms (without <form></form>)
+
+  Context:
+   - form: Actual rendered form
+  {% endcomment %}
+
+  {% hiddenfields using %}
+    {% comment %}
+    Template for rendering hidden fields.
+
+    Context:
+     - form: Actual rendered form
+     - hidden_fields: Alias to form.hidden_fields
+    {% endcomment %}
+    {% for field in hidden_fields %}
+      {# There is usually no need to override HiddenInpuhttp://www.behej.com/topic/7218-jak-se-posunout-v-bezich-na-5-a-10km/48#post-195169t widget #}
+      {{ field }}
+    {% endfor %}
+  {% endhiddenfields %}
+
+  {% errors %}
+    {% comment %}
+    Template for rendering non-field errors.
+
+    Context:
+     - form: Actual rendered form
+     - non_field_errors: Alias to form.non_field_errors
+    {% endcomment %}
+    {{ non_field_errors }}
+  {% enderrors %}
+
+  {% fieldset using %}
+    {% comment %}
+    Template for rendering set of fields.
+
+    Context:
+     - form: Actual rendered form
+     - fields: Set of fields to be rendered.
+    {% endcomment %}
+    {% row using %}
+      {% comment %}
+      Template for rendering single form row (label + field).
+
+      Context:
+       - form: Actual rendered form
+       - fields: Set of fields in rendered fieldset.
+       - field: Actual field to be rendered.
+      {% endcomment %}
+
+      {% fielderror %}
+        {% comment %}
+        Template for rendering field errors.
+
+        Context:
+         - form: Actual rendered form
+         - fields: Set of fields in rendered fieldset.
+         - field: Actual field to be rendered.
+         - errors: Alias to field.errors
+        {% endcomment %}
+        {{ errors }}
+      {% endfielderror %}
+
+      {% label using %}
+        {% comment %}
+        Template for rendering field label.
+
+        Context:
+         - form: Actual rendered form
+         - fields: Set of fields in rendered fieldset.
+         - field: Actual field to be rendered.
+         - label: Label object with attributes - id, tag, label.
+        {% endcomment %}
+        {{ label }}
+      {% endlabel %}
+
+      {% field using %}
+        {% comment %}
+        Template for rendering field.
+
+        Context:
+         - form: Actual rendered form
+         - fields: Set of fields in rendered fieldset.
+         - field: Actual field to be rendered.
+        {% endcomment %}
+        {{ field }}
+      {% endfield %}
+    {% endrow %}
+  {% endfieldset %}
+{% endforme %}
