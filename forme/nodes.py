@@ -33,7 +33,7 @@ class FormeNodeBase(template.Node):
             invalid = lambda node: not isinstance(node, self.valid_child_nodes)
             child_nodes = filter(invalid, child_nodes)
 
-        if child_nodes:
+        if any(child_nodes):
             msg = ("Node {0} can\'t contain following nodes: {1}"
                    .format(self.__class__, child_nodes))
             raise template.TemplateSyntaxError(msg)
