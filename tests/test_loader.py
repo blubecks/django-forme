@@ -12,12 +12,12 @@ from forme.loader import load_style, preload_styles
 def test_load_style():
     template_string = '''
         {% load forme %}
-        {% forme form %}
+        {% forme using%}{% endforme %}
     '''
     template = Template(template_string)
     style = load_style(template)
 
-    assert isinstance(style, FormeNode)
+    assert isinstance(style, dict)
 
 
 def test_load_style_multiple_tags():
@@ -49,4 +49,4 @@ def test_preload_styles_invalid_template():
 def test_preload_styles():
     styles = preload_styles()
     for node in styles.values():
-        assert isinstance(node, FormeNode)
+        assert isinstance(node, dict)
