@@ -13,17 +13,20 @@ def pytest_generate_tests(metafunc):
     if not metafunc.cls:
         return
 
-    # called once per each test function
-    funcarglist = metafunc.cls().params[metafunc.function.__name__]
-    metafunc.parametrize('template_string', funcarglist, ids=funcarglist)
+    if metafunc.cls.__name__ == 'TestChildNodes':
+        # called once per each test function
+        funcarglist = metafunc.cls().params[metafunc.function.__name__]
+        metafunc.parametrize('template_string', funcarglist, ids=funcarglist)
 
 
 def test_node_factory():
     default_node_args = ('default', 'default', [])
     # All valid tags should return Node subclass
     for tag in FormeParser.valid_tags:
+        node = nodes.node_factory(tag, *default_node_args)
         assert tag in nodes.node_classes
-        assert isinstance(nodes.node_factory(tag, *default_node_args),
+        assert tag == node.tag_name
+        assert isinstance(node,
                           template.Node)
 
     # Unknown tag
