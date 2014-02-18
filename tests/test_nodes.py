@@ -26,7 +26,7 @@ def pytest_generate_tests(metafunc):
 
 
 def test_node_factory():
-    default_node_args = ('default', 'default', [])
+    default_node_args = ('default', 'default', template.NodeList())
     # All valid tags should return Node subclass
     for tag in FormeParser.valid_tags:
         node = nodes.node_factory(tag, *default_node_args)

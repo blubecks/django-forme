@@ -8,6 +8,7 @@ from django.utils.datastructures import SortedDict
 
 
 class FormeNodeBase(template.Node):
+    direct_child_nodes = ()
     valid_child_nodes = ()
     all_forme_nodes = ()
 
@@ -30,10 +31,26 @@ class FormeNodeBase(template.Node):
 
         child_nodes = self.validate_child_nodes()
         self.update_templates(child_nodes)
+        self.remove_template_nodes()
 
     def get_direct_child_nodes_by_type(self, nodetype):
         valid = lambda node: isinstance(node, nodetype)
         return [node for node in self.nodelist if valid(node)]
+
+    def is_template(self, node=None):
+        if not node:
+            node = self
+
+        direct = self.direct_child_nodes or self.valid_child_nodes
+        template_nodes = tuple(set(self.all_forme_nodes) - set(direct))
+
+        is_template = isinstance(node, tuple(template_nodes))
+        is_default = isinstance(node, self.all_forme_nodes) and node.default
+        return is_template or is_default
+
+    def remove_template_nodes(self):
+        self.nodelist = template.NodeList([node for node in self.nodelist
+                                           if not self.is_template(node)])
 
     def set_parent(self, parent):
         self.parent = parent
@@ -98,7 +115,8 @@ class RowNode(FormeNodeBase):
 
 
 class FieldsetNode(FormeNodeBase):
-    valid_child_nodes = (RowNode,) + RowNode.valid_child_nodes
+    direct_child_nodes = (RowNode,)
+    valid_child_nodes = direct_child_nodes + RowNode.valid_child_nodes
 
 
 class HiddenFieldsNode(FormeNodeBase):
@@ -110,8 +128,8 @@ class ErrorsNode(FormeNodeBase):
 
 
 class FormeNode(FormeNodeBase):
-    valid_child_nodes = ((HiddenFieldsNode, ErrorsNode, FieldsetNode)
-                         + FieldsetNode.valid_child_nodes)
+    direct_child_nodes = HiddenFieldsNode, ErrorsNode, FieldsetNode
+    valid_child_nodes = direct_child_nodes + FieldsetNode.valid_child_nodes
 
 
 node_classes = {
