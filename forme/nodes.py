@@ -13,7 +13,7 @@ class FormeNodeBase(template.Node):
         self.action = action
         self.nodelist = nodelist
 
-        self.validate_child_nodes()
+        child_nodes = self.validate_child_nodes()
 
         # Nodes without targets are default templates.
         self.default = not target
@@ -27,16 +27,21 @@ class FormeNodeBase(template.Node):
         child_nodes.pop(0)
 
         if not child_nodes:
-            return
+            return []
 
         if self.valid_child_nodes:
             invalid = lambda node: not isinstance(node, self.valid_child_nodes)
-            child_nodes = filter(invalid, child_nodes)
+            invalid_nodes = filter(invalid, child_nodes)
+        else:
+            # No child nodes are allowed
+            invalid_nodes = child_nodes
 
-        if any(child_nodes):
+        if any(invalid_nodes):
             msg = ("Node {0} can\'t contain following nodes: {1}"
-                   .format(self.__class__, child_nodes))
+                   .format(self.__class__, invalid_nodes))
             raise template.TemplateSyntaxError(msg)
+
+        return child_nodes
 
 
 class FieldNode(FormeNodeBase):
