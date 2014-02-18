@@ -52,6 +52,13 @@ class FormeNodeBase(template.Node):
         self.nodelist = template.NodeList([node for node in self.nodelist
                                            if not self.is_template(node)])
 
+    def render(self, context):
+        if self.nodelist:
+            return self.nodelist.render(context)
+        else:
+            target = self.target[0] in self.templates[self.tag_name] or ''
+            return self.templates[self.tag_name][target].render(context)
+
     def set_parent(self, parent):
         self.parent = parent
 
@@ -107,7 +114,9 @@ class FieldErrorsNode(FormeNodeBase):
 
 
 class LabelNode(FormeNodeBase):
-    valid_child_nodes = (FieldNode, FieldErrorsNode)
+    # It's a bit tricky, will be added in future.
+    # valid_child_nodes = (FieldNode, FieldErrorsNode)
+    pass
 
 
 class RowNode(FormeNodeBase):
