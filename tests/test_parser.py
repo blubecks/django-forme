@@ -29,13 +29,20 @@ class TestFormeParse:
     def test_action_no_target(self, node_mock):
         parser, token = parse_template('{% forme using %}{% endforme %}')
         FormeParser(parser, token).parse()
-        node_mock.assert_called_once_with('forme', [], 'using', [])
+        tag, targets, action, nodelist = node_mock.call_args[0]
+        assert tag == 'forme'
+        assert targets == []
+        assert action == 'using'
+        assert nodelist == []
 
     def test_parse_target(self, forme):
-        assert forme.parse_target(['form']) == ['form']
-        assert forme.parse_target(['form1', 'form2']) == ['form1', 'form2']
-        assert forme.parse_target(['"form1 form2"']) == ['"form1"', '"form2"']
-        assert forme.parse_target(['"form1 form2"', 'form3']) \
+        vars = lambda variables: [variable.var for variable in variables]
+        assert vars(forme.parse_target(['form'])) == ['form']
+        assert vars(forme.parse_target(['form1', 'form2'])) \
+               == ['form1', 'form2']
+        assert vars(forme.parse_target(['"form1 form2"'])) \
+               == ['"form1"', '"form2"']
+        assert vars(forme.parse_target(['"form1 form2"', 'form3'])) \
                 == ['"form1"', '"form2"', 'form3']
 
     def test_parse_action(self, forme):
@@ -46,14 +53,16 @@ class TestFormeParse:
     def test_parse_paired_empty(self, node_mock):
         parser, token = parse_template('{% forme form using %}{% endforme %}')
         FormeParser(parser, token).parse()
-        node_mock.assert_called_once_with('forme', ['form'], 'using', [])
-        # Fourth argument of first call
-        assert node_mock.call_args[0][3] == []
+        tag, targets, action, nodelist = node_mock.call_args[0]
+        assert tag == 'forme'
+        assert action == 'using'
+        assert nodelist == []
 
     def test_parse_paired(self, node_mock):
         tpl = '{% forme form using %}{{ test }}{% endforme %}'
         parser, token = parse_template(tpl)
         FormeParser(parser, token).parse()
-        # Fourth argument of first call
-        assert node_mock.call_args[0][3] != []
-
+        tag, targets, action, nodelist = node_mock.call_args[0]
+        assert tag == 'forme'
+        assert action == 'using'
+        assert nodelist != []

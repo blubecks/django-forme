@@ -93,7 +93,7 @@ class FormeNodeBase(template.Node):
             # Define templates for all targets.
             if node.target:
                 for target in node.target:
-                    templates[node.tag_name][target] = node
+                    templates[node.tag_name][target.var] = node
             # Define default template.
             else:
                 templates[node.tag_name][''] = node
