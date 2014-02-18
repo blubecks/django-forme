@@ -1,12 +1,18 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-import itertools as I
 import pytest
 from django import template
 
 from forme import nodes
 from forme.parser import FormeParser
+from forme.nodes import FormeNode
+
+
+def tag2nodes(template_string):
+    tmpl = template.Template('{% load forme %}' + template_string)
+    valid = lambda node: isinstance(node, FormeNode.all_forme_nodes)
+    return list(filter(valid, tmpl.nodelist))
 
 
 def pytest_generate_tests(metafunc):
@@ -93,3 +99,40 @@ class TestChildNodes:
             pass
         else:
             pytest.fail("Shouldn't be valid template: {0}".format(tmpl))
+
+
+class TestNodeTemplates:
+    def test_empty_templates(self):
+        tmpl = '{% forme using %}{% endforme %}'
+        node = tag2nodes(tmpl)[0]
+        assert node.templates == {}
+
+    def test_default_field_template(self):
+        tmpl = '{% forme using %}{% field using %}{% endfield %}{% endforme %}'
+        forme = tag2nodes(tmpl)[0]
+        # Template for field...
+        assert 'field' in forme.templates
+        # Default for all fields.
+        assert '' in forme.templates['field']
+
+        # Traverse to field node and check parent
+        field = forme.templates['field']['']
+        assert field.parent == forme
+
+    def test_target_field_template(self):
+        tmpl = ('{% forme using %}{% field "username" using %}'
+                '{% endfield %}{% endforme %}')
+        forme = tag2nodes(tmpl)[0]
+        assert 'field' in forme.templates
+        assert '"username"' in forme.templates['field']
+
+    def test_template_order_preserved(self):
+        tmpl = ('{% forme using %}{% field "username" using %}{% endfield %}'
+                '{% field "password" using %}{% endfield %}{% endforme %}')
+        forme = tag2nodes(tmpl)[0]
+
+        tmpl = ('{% forme using %}{% field "password" using %}{% endfield %}'
+                '{% field "username" using %}{% endfield %}{% endforme %}')
+        forme = tag2nodes(tmpl)[0]
+        assert ['"password"', '"username"'] == forme.templates['field'].keys()
+

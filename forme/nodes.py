@@ -1,7 +1,9 @@
 # coding: utf-8
 from __future__ import unicode_literals
+from collections import defaultdict
 
 from django import template
+from django.utils.datastructures import SortedDict
 
 
 class FormeNodeBase(template.Node):
@@ -14,7 +16,12 @@ class FormeNodeBase(template.Node):
         self.action = action
         self.nodelist = nodelist
 
+        self.parent = None
+        # Will be set from parent node or default style
+        self.templates = defaultdict(SortedDict)
+
         child_nodes = self.validate_child_nodes()
+        self.templates.update(self.update_node_templates(child_nodes))
 
         # Nodes without targets are default templates.
         self.default = not target
@@ -43,6 +50,18 @@ class FormeNodeBase(template.Node):
             raise template.TemplateSyntaxError(msg)
 
         return child_nodes
+
+    def update_node_templates(self, child_nodes):
+        templates = defaultdict(SortedDict)
+        for node in child_nodes:
+            node.parent = self
+
+            if node.target:
+                for target in node.target:
+                    templates[node.tag_name][target] = node
+            else:
+                templates[node.tag_name][''] = node
+        return templates
 
 
 class FieldNode(FormeNodeBase):
