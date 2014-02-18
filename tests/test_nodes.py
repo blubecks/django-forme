@@ -130,9 +130,12 @@ class TestNodeTemplates:
         tmpl = ('{% forme using %}{% field "username" using %}{% endfield %}'
                 '{% field "password" using %}{% endfield %}{% endforme %}')
         forme = tag2nodes(tmpl)[0]
+        assert ['"username"', '"password"'] \
+                == list(forme.templates['field'].keys())
 
         tmpl = ('{% forme using %}{% field "password" using %}{% endfield %}'
                 '{% field "username" using %}{% endfield %}{% endforme %}')
         forme = tag2nodes(tmpl)[0]
-        assert ['"password"', '"username"'] == forme.templates['field'].keys()
+        assert ['"password"', '"username"'] \
+                == list(forme.templates['field'].keys())
 
