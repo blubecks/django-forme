@@ -1,6 +1,7 @@
 # coding: utf-8
 from __future__ import unicode_literals
 from collections import defaultdict
+import copy
 
 from django import template
 from django.utils.datastructures import SortedDict
@@ -16,15 +17,27 @@ class FormeNodeBase(template.Node):
         self.action = action
         self.nodelist = nodelist
 
+        # Nodes without targets are default templates.
+        self.default = not target
+
         self.parent = None
-        # Will be set from parent node or default style
-        self.templates = defaultdict(SortedDict)
+        if self.tag_name == 'forme' and not self.default:
+            from forme import loader
+            self.templates = loader.get_default_style()
+        else:
+            # Will be set from parent node or default style
+            self.templates = defaultdict(SortedDict)
 
         child_nodes = self.validate_child_nodes()
         self.templates.update(self.update_node_templates(child_nodes))
 
-        # Nodes without targets are default templates.
-        self.default = not target
+    def set_parent(self, parent):
+        self.parent = parent
+
+        # Copy parent templates and override with all defined templates
+        templates = copy.deepcopy(parent.templates)
+        templates.update(self.templates)
+        self.templates = templates
 
     def validate_child_nodes(self):
         child_nodes = self.get_nodes_by_type(self.all_forme_nodes)
@@ -51,13 +64,18 @@ class FormeNodeBase(template.Node):
     def update_node_templates(self, child_nodes):
         templates = defaultdict(SortedDict)
         for node in child_nodes:
-            node.parent = self
-
+            # Define templates for all targets.
             if node.target:
                 for target in node.target:
                     templates[node.tag_name][target] = node
+            # Define default template.
             else:
                 templates[node.tag_name][''] = node
+
+        # Set missing child templates from self
+        for node in child_nodes:
+            node.set_parent(self)
+
         return templates
 
 
