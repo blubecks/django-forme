@@ -12,11 +12,8 @@ from forme.parser import FormeParser
 
 
 def pytest_configure():
-    test_template_dir = os.path.join(os.path.dirname(__file__), 'templates')
-
     settings.configure(
         TEMPLATE_DEBUG=True, DEBUG=True,
-        TEMPLATE_DIRS=test_template_dir,
         INSTALLED_APPS=('forme',)
     )
 

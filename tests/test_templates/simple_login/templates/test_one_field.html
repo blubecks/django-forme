@@ -1,0 +1,16 @@
+{% load forme %}
+
+{% block template %}
+  {% forme form using %}
+    {% field "password" using %}
+      <input type="text" name="{{ html_name }}" id="{{ html_id }}" value="" />
+    {% endfield %}
+  {% endform %}
+{% endblock %}
+
+{% block expected %}
+  <label for="id_username">Username</label>
+  <input type="text" name="username" id="id_username" value="" />
+  <label for="id_password">Password</label>
+    <input type="text" name="password" id="id_password" value="" />
+{% endblock %}
