@@ -8,7 +8,8 @@ class FormeNodeBase(template.Node):
     valid_child_nodes = ()
     all_forme_nodes = ()
 
-    def __init__(self, target, action, nodelist):
+    def __init__(self, tag_name, target, action, nodelist):
+        self.tag_name = tag_name
         self.target = target
         self.action = action
         self.nodelist = nodelist
@@ -92,7 +93,7 @@ FormeNodeBase.all_forme_nodes = tuple(node_classes.values())
 
 def node_factory(tag_name, *args, **kwargs):
     try:
-        return node_classes[tag_name](*args, **kwargs)
+        return node_classes[tag_name](tag_name, *args, **kwargs)
     except KeyError:
         raise KeyError('Missing node class mapping for tag name {name}'
                        .format(name=tag_name))
