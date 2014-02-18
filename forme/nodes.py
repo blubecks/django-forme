@@ -26,9 +26,6 @@ class FormeNodeBase(template.Node):
         # Nodes without targets are default templates.
         self.default = not target
 
-    def render(self, context):
-        pass
-
     def validate_child_nodes(self):
         child_nodes = self.get_nodes_by_type(self.all_forme_nodes)
         # First node in list is node itself.
