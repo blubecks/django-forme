@@ -139,3 +139,17 @@ class TestNodeTemplates:
         assert ['"password"', '"username"'] \
                 == list(forme.templates['field'].keys())
 
+    def test_override_parent_template(self):
+        tmpl = ('{% forme using %}'
+                '{% field using %}Parent{% endfield %}'
+                '{% fieldset using %}{% field using %}Child{% endfield %}'
+                '{% endfieldset %}{% endforme %}')
+
+        forme = tag2nodes(tmpl)[0]
+        fieldset = forme.templates['fieldset']['']
+
+        # Get content of first node (TextNode) in field's nodelist
+        text_node = lambda node: node.templates['field'][''].nodelist[0].s
+        assert text_node(forme) == 'Parent'
+        assert text_node(fieldset) == 'Child'
+

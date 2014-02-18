@@ -29,7 +29,11 @@ class FormeNodeBase(template.Node):
             self.templates = defaultdict(SortedDict)
 
         child_nodes = self.validate_child_nodes()
-        self.templates.update(self.update_node_templates(child_nodes))
+        self.update_templates(child_nodes)
+
+    def get_direct_child_nodes_by_type(self, nodetype):
+        valid = lambda node: isinstance(node, nodetype)
+        return [node for node in self.nodelist if valid(node)]
 
     def set_parent(self, parent):
         self.parent = parent
@@ -40,9 +44,7 @@ class FormeNodeBase(template.Node):
         self.templates = templates
 
     def validate_child_nodes(self):
-        child_nodes = self.get_nodes_by_type(self.all_forme_nodes)
-        # First node in list is node itself.
-        child_nodes.pop(0)
+        child_nodes = self.get_direct_child_nodes_by_type(self.all_forme_nodes)
 
         if not child_nodes:
             return []
@@ -61,7 +63,7 @@ class FormeNodeBase(template.Node):
 
         return child_nodes
 
-    def update_node_templates(self, child_nodes):
+    def update_templates(self, child_nodes):
         templates = defaultdict(SortedDict)
         for node in child_nodes:
             # Define templates for all targets.
@@ -76,8 +78,7 @@ class FormeNodeBase(template.Node):
         for node in child_nodes:
             node.set_parent(self)
 
-        return templates
-
+        self.templates.update(templates)
 
 class FieldNode(FormeNodeBase):
     pass
