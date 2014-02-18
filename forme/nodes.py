@@ -80,6 +80,7 @@ class FormeNodeBase(template.Node):
 
         self.templates.update(templates)
 
+
 class FieldNode(FormeNodeBase):
     pass
 
