@@ -1,7 +1,11 @@
 # coding: utf-8
 from __future__ import unicode_literals
+import copy
 
+import itertools as I
+import mock
 import pytest
+from django import forms
 from django import template
 
 from forme import nodes
@@ -153,3 +157,75 @@ class TestNodeTemplates:
         assert text_node(forme) == 'Parent'
         assert text_node(fieldset) == 'Child'
 
+
+class TestNodeRender:
+    @pytest.fixture
+    def field(self):
+        field = forms.forms.BoundField(forms.Form(), forms.Field(), 'field')
+        return field
+
+    @pytest.fixture
+    def render_mock(self, request):
+        m = mock.Mock()
+        p = mock.patch.object(nodes.FormeNodeBase, 'render', m)
+        p.start()
+        request.addfinalizer(p.stop)
+        return self.copy_call_args(m)
+
+    def copy_call_args(self, mock):
+        """
+        Recipe from:
+        http://docs.python.org/dev/library/unittest.mock-examples.html#coping-with-mutable-arguments
+
+        """
+        new_mock = mock.Mock()
+
+        def side_effect(*args, **kwargs):
+            args = copy.deepcopy(args)
+            kwargs = copy.deepcopy(kwargs)
+            new_mock(*args, **kwargs)
+            return mock.DEFAULT
+        mock.side_effect = side_effect
+        return new_mock
+
+    def flatten(self, context):
+        flat = {}
+        for ctx in context:
+            flat.update(ctx)
+        return flat
+
+    def test_fielderrors_no_errors(self, field):
+        node = nodes.FieldErrorsNode('fielderrors', '', '')
+        assert node.render(template.Context({'field': field})) == ''
+
+    def test_fielderrors(self, field, render_mock):
+        field.form._errors = {'field': 'test_errors'}
+        node = nodes.FieldErrorsNode('fielderrors', '', '')
+        node.render(template.Context({'field': field}))
+
+        context = self.flatten(render_mock.call_args[0][0])
+        assert 'field' in context
+        assert 'errors' in context
+        assert context['errors'] == context['field'].errors
+
+    def test_label(self, field, render_mock):
+        node = nodes.LabelNode('label', '', '')
+        node.render(template.Context({'field': field}))
+
+        context = self.flatten(render_mock.call_args[0][0])
+        assert 'field' in context
+        assert 'label' in context
+
+        field = context['field']
+        label = context['label']
+        assert label['id'] == field.id_for_label
+        assert label['label'] == field.label
+        assert label['tag'] == field.label_tag()
+
+    def test_hiddenfields_no_fields(self):
+        node = nodes.HiddenFieldsNode('hiddenfields', '', '')
+        assert node.render(template.Context({'form': forms.Form()})) == ''
+
+    def test_errors_no_errors(self):
+        node = nodes.ErrorsNode('errors', '', '')
+        assert node.render(template.Context({'form': forms.Form()})) == ''

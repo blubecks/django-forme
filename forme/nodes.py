@@ -12,11 +12,11 @@ class FormeNodeBase(template.Node):
     valid_child_nodes = ()
     all_forme_nodes = ()
 
-    def __init__(self, tag_name, target, action, nodelist):
+    def __init__(self, tag_name, target, action=None, nodelist=None):
         self.tag_name = tag_name
         self.target = target
-        self.action = action
-        self.nodelist = nodelist
+        self.action = action or 'default'
+        self.nodelist = nodelist or template.NodeList()
 
         # Nodes without targets are default templates.
         self.default = not target
@@ -106,17 +106,54 @@ class FormeNodeBase(template.Node):
 
 
 class FieldNode(FormeNodeBase):
-    pass
+    """
+    Renders single field. It doesn't push any variables into context because
+    'field' variable is already pushed by row node.
+
+    """
 
 
 class FieldErrorsNode(FormeNodeBase):
-    pass
+    """
+    Renders field errors, if any. It pushes 'errors' variable into context
+    which is alias to field.errors.
+
+    """
+    def render(self, context):
+        errors = getattr(context['field'], 'errors', None)
+        if not errors:
+            return ''
+
+        context.update({'errors': errors})
+        output = super(FieldErrorsNode, self).render(context)
+        context.pop()
+        return output
 
 
 class LabelNode(FormeNodeBase):
+    """
+    Renders field's label. it pushes 'label' variable into context which is
+    a dict containing:
+        id: alias for field.id_for_label
+        label: alias for field.label
+        tag: alias for field.label_tag
+
+    """
     # It's a bit tricky, will be added in future.
     # valid_child_nodes = (FieldNode, FieldErrorsNode)
-    pass
+
+    def render(self, context):
+        field = context['field']
+        context.update({
+            'label': {
+                'id': field.id_for_label,
+                'label': field.label,
+                'tag': field.label_tag(),
+            },
+        })
+        output = super(LabelNode, self).render(context)
+        context.pop()
+        return output
 
 
 class RowNode(FormeNodeBase):
@@ -129,11 +166,37 @@ class FieldsetNode(FormeNodeBase):
 
 
 class HiddenFieldsNode(FormeNodeBase):
-    pass
+    """
+    Renders all form's hidden fields, if any. Pushes 'hidden_fields' variable
+    into context as an alias for form.hidden_fields().
+
+    """
+    def render(self, context):
+        hidden_fields = context['form'].hidden_fields()
+        if not hidden_fields:
+            return ''
+
+        context.update({'hidden_fields': hidden_fields})
+        output = super(HiddenFieldsNode, self).render(context)
+        context.pop()
+        return output
 
 
 class ErrorsNode(FormeNodeBase):
-    pass
+    """
+    Renders non field errors, if any. It pushes 'non_fields_errors' variable
+    into context which is an alias to form.non_fields_errors().
+
+    """
+    def render(self, context):
+        errors = context['form'].non_field_errors()
+        if not errors:
+            return ''
+
+        context.update({'non_field_errors': errors})
+        output = super(ErrorsNode, self).render(context)
+        context.pop()
+        return output
 
 
 class FormeNode(FormeNodeBase):
