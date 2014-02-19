@@ -40,7 +40,7 @@ def test_template(case, template_name):
 
     """
     temp_ = __import__('{0}.context'.format(case),  fromlist=['skip', 'context'], level=0)
-    ctx = temp_.context
+    ctx = template.Context(temp_.context)
     skip = getattr(temp_, 'skip', False)
     if skip:
         pytest.skip()
