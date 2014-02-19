@@ -113,7 +113,7 @@ class FieldNode(FormeNodeBase):
     """
 
 
-class FieldErrorsNode(FormeNodeBase):
+class ErrorsNode(FormeNodeBase):
     """
     Renders field errors, if any. It pushes 'errors' variable into context
     which is alias to field.errors.
@@ -125,7 +125,7 @@ class FieldErrorsNode(FormeNodeBase):
             return ''
 
         context.update({'errors': errors})
-        output = super(FieldErrorsNode, self).render(context)
+        output = super(ErrorsNode, self).render(context)
         context.pop()
         return output
 
@@ -140,7 +140,7 @@ class LabelNode(FormeNodeBase):
 
     """
     # It's a bit tricky, will be added in future.
-    # valid_child_nodes = (FieldNode, FieldErrorsNode)
+    # valid_child_nodes = (FieldNode, ErrorsNode)
 
     def render(self, context):
         field = context['field']
@@ -157,7 +157,7 @@ class LabelNode(FormeNodeBase):
 
 
 class RowNode(FormeNodeBase):
-    valid_child_nodes = (FieldNode, LabelNode, FieldErrorsNode)
+    valid_child_nodes = (FieldNode, LabelNode, ErrorsNode)
 
 
 class FieldsetNode(FormeNodeBase):
@@ -182,7 +182,7 @@ class HiddenFieldsNode(FormeNodeBase):
         return output
 
 
-class ErrorsNode(FormeNodeBase):
+class NonFieldErrorsNode(FormeNodeBase):
     """
     Renders non field errors, if any. It pushes 'non_fields_errors' variable
     into context which is an alias to form.non_fields_errors().
@@ -194,13 +194,13 @@ class ErrorsNode(FormeNodeBase):
             return ''
 
         context.update({'non_field_errors': errors})
-        output = super(ErrorsNode, self).render(context)
+        output = super(NonFieldErrorsNode, self).render(context)
         context.pop()
         return output
 
 
 class FormeNode(FormeNodeBase):
-    direct_child_nodes = HiddenFieldsNode, ErrorsNode, FieldsetNode
+    direct_child_nodes = HiddenFieldsNode, NonFieldErrorsNode, FieldsetNode
     valid_child_nodes = direct_child_nodes + FieldsetNode.valid_child_nodes
 
 
@@ -211,8 +211,8 @@ node_classes = {
     'label': LabelNode,
     'field': FieldNode,
     'hiddenfields': HiddenFieldsNode,
+    'nonfielderrors': NonFieldErrorsNode,
     'errors': ErrorsNode,
-    'fielderrors': FieldErrorsNode,
 }
 FormeNodeBase.all_forme_nodes = tuple(node_classes.values())
 

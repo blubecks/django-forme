@@ -28,7 +28,7 @@ Context:
    - form: Actual rendered form
    - non_field_errors: Alias to form.non_field_errors
   {% endcomment %}
-  {% errors using %}{{ non_field_errors }}{% enderrors %}
+  {% nonfielderrors using %}{{ non_field_errors }}{% endnonfielderrors %}
 
   {% comment %}
   Template for rendering set of fields.
@@ -58,7 +58,7 @@ Context:
    - field: Actual field to be rendered.
    - errors: Alias to field.errors
   {% endcomment %}
-  {% fielderrors using %}{{ errors }}{% endfielderrors %}
+  {% errors using %}{{ errors }}{% enderrors %}
 
   {% comment %}
   Template for rendering field label.

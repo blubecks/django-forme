@@ -9,7 +9,7 @@ from forme.nodes import node_factory
 
 class FormeParser(object):
     valid_tags = ('forme fieldset row label field hiddenfields'
-                  ' errors fielderrors'.split())
+                  ' nonfielderrors errors'.split())
     common_actions = 'exclude using replace template'.split()
 
     def __init__(self, parser, token):

@@ -45,8 +45,8 @@ def test_node_factory():
 
 
 class TestChildNodes:
-    tags = ("field fielderrors label row fieldset"
-            " errors hiddenfields".split())
+    tags = ("field errors label row fieldset"
+            " nonfielderrors hiddenfields".split())
 
     nodes_tag_map = dict(zip(nodes.node_classes.values(),
                              nodes.node_classes.keys()))
@@ -195,12 +195,12 @@ class TestNodeRender:
         return flat
 
     def test_fielderrors_no_errors(self, field):
-        node = nodes.FieldErrorsNode('fielderrors', '', '')
+        node = nodes.ErrorsNode('errors', '', '')
         assert node.render(template.Context({'field': field})) == ''
 
     def test_fielderrors(self, field, render_mock):
         field.form._errors = {'field': 'test_errors'}
-        node = nodes.FieldErrorsNode('fielderrors', '', '')
+        node = nodes.ErrorsNode('errors', '', '')
         node.render(template.Context({'field': field}))
 
         context = self.flatten(render_mock.call_args[0][0])
@@ -227,5 +227,5 @@ class TestNodeRender:
         assert node.render(template.Context({'form': forms.Form()})) == ''
 
     def test_errors_no_errors(self):
-        node = nodes.ErrorsNode('errors', '', '')
+        node = nodes.NonFieldErrorsNode('nonfielderrors', '', '')
         assert node.render(template.Context({'form': forms.Form()})) == ''
