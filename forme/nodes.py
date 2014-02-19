@@ -19,9 +19,6 @@ class FormeNodeBase(template.Node):
         self.action = action or 'default'
         self.nodelist = nodelist or template.NodeList()
 
-        # Nodes without targets are default templates.
-        self.default = not target
-
         self.parent = None
         if self.tag_name == 'forme' and self.target:
             # Rendering forme, load default style
@@ -37,8 +34,8 @@ class FormeNodeBase(template.Node):
         self.update_templates(child_nodes)
         self.remove_template_nodes()
 
-        if self.tag_name == 'forme' and self.default:
-            self.templates[self.tag_name][''] = self
+        if tag_name == 'forme' and action == 'using':
+            self.templates['forme'] = self.nodelist
 
     def get_direct_child_nodes_by_type(self, nodetype):
         return [node for node in self.nodelist if isinstance(node, nodetype)]
@@ -48,15 +45,13 @@ class FormeNodeBase(template.Node):
             node = self
 
         direct = self.direct_child_nodes or self.valid_child_nodes
-        template_nodes = tuple(set(self.all_forme_nodes) - set(direct))
+        indirect_nodes = tuple(set(self.all_forme_nodes) - set(direct))
 
-        is_template = isinstance(node, tuple(template_nodes))
-        is_default = isinstance(node, self.all_forme_nodes) and node.default
-        return is_template or is_default
+        return isinstance(node, tuple(indirect_nodes))
 
     def remove_template_nodes(self):
-        self.nodelist = template.NodeList([node for node in self.nodelist
-                                           if not self.is_template(node)])
+        self.nodelist = template.NodeList(
+            [node for node in self.nodelist if not self.is_template(node)])
 
     def render(self, context):
         if self.nodelist:
@@ -101,7 +96,7 @@ class FormeNodeBase(template.Node):
                 for target in node.target:
                     templates[node.tag_name][target.var] = node
             # Define default template.
-            else:
+            elif node.action == 'using':
                 templates[node.tag_name][''] = node
 
         # Set missing child templates from self
