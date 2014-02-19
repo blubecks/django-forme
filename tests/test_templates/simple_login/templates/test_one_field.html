@@ -1,7 +1,7 @@
 {% load forme %}
 
 {% block template %}
-  {% forme form using %}
+  {% forme form replace %}
     {% field "password" using %}
       <input type="text" name="{{ html_name }}" id="{{ html_id }}" value="" />
     {% endfield %}
