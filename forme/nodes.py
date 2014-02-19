@@ -37,8 +37,7 @@ class FormeNodeBase(template.Node):
             self.templates[self.tag_name][''] = self
 
     def get_direct_child_nodes_by_type(self, nodetype):
-        valid = lambda node: isinstance(node, nodetype)
-        return [node for node in self.nodelist if valid(node)]
+        return [node for node in self.nodelist if isinstance(node, nodetype)]
 
     def is_template(self, node=None):
         if not node:
