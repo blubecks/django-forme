@@ -11,6 +11,7 @@ class FormeNodeBase(template.Node):
     direct_child_nodes = ()
     valid_child_nodes = ()
     all_forme_nodes = ()
+    target_required = False
 
     def __init__(self, tag_name, target, action=None, nodelist=None):
         self.tag_name = tag_name
@@ -164,20 +165,53 @@ class LabelNode(FormeNodeBase):
 class RowNode(FormeNodeBase):
     """
     Renders single row which usualy consists of field errors, label and field.
-    It adds 'field' variable into context as reference to rendered field.
+    It adds 'field' variable into context as reference to rendered field or
+    'fields' variable if row contains more than one field. Template itself
+    is responsible for looping over fields..
 
     """
     valid_child_nodes = (FieldNode, LabelNode, ErrorsNode)
+    target_required = True
+
+    def render(self, context):
+        form = context['form']
+        fields = [form[field.resolve(context)] for field in self.target]
+
+        if not any(self.target):
+            raise template.TemplateSyntaxError('Missing field to render.')
+        elif len(self.target) > 1:
+            context_variable = 'fields'
+        else:
+            context_variable = 'field'
+
+        context.update({context_variable: fields})
+        output = super(RowNode, self).render(context)
+        context.pop()
+
+        return output
 
 
 class FieldsetNode(FormeNodeBase):
     """
-    Renders list of row nodes. Adds 'fields' to context which is list of
-    rendered field objects.
+    Renders list of row nodes. Adds 'fieldset_fields' to context which is list
+    of rendered field objects.
 
     """
     direct_child_nodes = (RowNode,)
     valid_child_nodes = direct_child_nodes + RowNode.valid_child_nodes
+
+    def render(self, context):
+        form = context['form']
+        fields = [form[field.resolve(context)] for field in self.target]
+
+        if not any(fields):
+            fields = list(form)
+
+        context.update({'fieldset_fields': fields})
+        output = super(FieldsetNode, self).render(context)
+        context.pop()
+
+        return output
 
 
 class HiddenFieldsNode(FormeNodeBase):
@@ -222,6 +256,23 @@ class FormeNode(FormeNodeBase):
     """
     direct_child_nodes = HiddenFieldsNode, NonFieldErrorsNode, FieldsetNode
     valid_child_nodes = direct_child_nodes + FieldsetNode.valid_child_nodes
+    target_required = True
+
+    def render(self, context):
+        forms = [form.resolve(context) for form in self.target]
+        if not any(forms):
+            raise template.TemplateSyntaxError('Need form to render.')
+        elif len(self.target) > 1:
+            context_variable = 'forms'
+        else:
+            context_variable = 'form'
+            forms = forms[0]
+
+        context.update({context_variable: forms})
+        output = super(FormeNode, self).render(context)
+        context.pop()
+
+        return output
 
 
 node_classes = {
