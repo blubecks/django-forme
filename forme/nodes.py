@@ -33,6 +33,9 @@ class FormeNodeBase(template.Node):
         self.update_templates(child_nodes)
         self.remove_template_nodes()
 
+        if self.tag_name == 'forme' and self.default:
+            self.templates[self.tag_name][''] = self
+
     def get_direct_child_nodes_by_type(self, nodetype):
         valid = lambda node: isinstance(node, nodetype)
         return [node for node in self.nodelist if valid(node)]
