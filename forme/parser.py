@@ -30,11 +30,6 @@ class FormeParser(object):
         parts = copy.copy(self.parts)
         action, paired = self.parse_action(parts)
         target = self.parse_target(parts)
-
-        if not target and action == 'default':
-            msg = "Can\'t print template. Add targets or action."
-            raise template.TemplateSyntaxError(msg)
-
         nodelist = self.parse_nodelist() if paired else []
 
         return node_factory(self.tag_name, target, action, nodelist)

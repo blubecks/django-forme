@@ -37,7 +37,7 @@ Context:
    - form: Actual rendered form
    - fields: Set of fields to be rendered.
   {% endcomment %}
-  {% fieldset using %}{% endfieldset %}
+  {% fieldset using %}{% row %}{% endfieldset %}
 
   {% comment %}
   Template for rendering single form row (label + field).
@@ -47,7 +47,11 @@ Context:
    - fields: Set of fields in rendered fieldset.
    - field: Actual field to be rendered.
   {% endcomment %}
-  {% row using %}{% endrow %}
+  {% row using %}
+    {% errors %}
+    {% label %}
+    {% field %}
+  {% endrow %}
 
   {% comment %}
   Template for rendering field errors.
@@ -80,4 +84,9 @@ Context:
    - field: Actual field to be rendered.
   {% endcomment %}
   {% field using %}{{ field }}{% endfield %}
+
+  {# Placeholders, will be rendered. #}
+  {% hiddenfields %}
+  {% nonfielderrors %}
+  {% fieldset %}
 {% endforme %}
