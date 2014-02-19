@@ -39,7 +39,7 @@ def test_template(case, template_name):
     Render template blocks "template" and "expected" and compare them.
 
     """
-    temp_ = __import__('{0}.forms'.format(case),  fromlist=['skip', 'context'], level=0)
+    temp_ = __import__('{0}.context'.format(case),  fromlist=['skip', 'context'], level=0)
     ctx = temp_.context
     skip = getattr(temp_, 'skip', False)
     if skip:
