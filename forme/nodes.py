@@ -157,10 +157,20 @@ class LabelNode(FormeNodeBase):
 
 
 class RowNode(FormeNodeBase):
+    """
+    Renders single row which usualy consists of field errors, label and field.
+    It adds 'field' variable into context as reference to rendered field.
+
+    """
     valid_child_nodes = (FieldNode, LabelNode, ErrorsNode)
 
 
 class FieldsetNode(FormeNodeBase):
+    """
+    Renders list of row nodes. Adds 'fields' to context which is list of
+    rendered field objects.
+
+    """
     direct_child_nodes = (RowNode,)
     valid_child_nodes = direct_child_nodes + RowNode.valid_child_nodes
 
@@ -200,6 +210,11 @@ class NonFieldErrorsNode(FormeNodeBase):
 
 
 class FormeNode(FormeNodeBase):
+    """
+    Top level tag to render form. Adds 'form' to context which represent
+    rendered form.
+
+    """
     direct_child_nodes = HiddenFieldsNode, NonFieldErrorsNode, FieldsetNode
     valid_child_nodes = direct_child_nodes + FieldsetNode.valid_child_nodes
 
