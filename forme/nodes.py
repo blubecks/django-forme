@@ -13,7 +13,7 @@ class FormeNodeBase(template.Node):
     all_forme_nodes = ()
     target_required = False
 
-    def __init__(self, tag_name, target, action=None, nodelist=None):
+    def __init__(self, tag_name, target=None, action=None, nodelist=None):
         self.tag_name = tag_name
         self.target = target
         self.action = action or 'default'
@@ -35,7 +35,7 @@ class FormeNodeBase(template.Node):
         self.remove_template_nodes()
 
         if tag_name == 'forme' and action == 'using':
-            self.templates['forme'] = self.nodelist
+            self.templates['forme'][''] = self.nodelist
 
     def get_direct_child_nodes_by_type(self, nodetype):
         return [node for node in self.nodelist if isinstance(node, nodetype)]
@@ -57,7 +57,10 @@ class FormeNodeBase(template.Node):
         if self.nodelist:
             return self.nodelist.render(context)
         else:
-            target = self.target[0] in self.templates[self.tag_name] or ''
+            if self.target and self.target[0] in self.templates[self.tag_name]:
+                target = self.target[0]
+            else:
+                target = ''
             return self.templates[self.tag_name][target].render(context)
 
     def set_parent(self, parent):
@@ -166,15 +169,16 @@ class RowNode(FormeNodeBase):
 
     """
     valid_child_nodes = (FieldNode, LabelNode, ErrorsNode)
-    target_required = True
 
     def render(self, context):
         form = context['form']
-        fields = [form[field.resolve(context)] for field in self.target]
 
-        if not any(self.target):
-            raise template.TemplateSyntaxError('Missing field to render.')
-        elif len(self.target) > 1:
+        if not self.target:
+            fields = context['fieldset_fields']
+        else:
+            fields = [form[field.resolve(context)] for field in self.target]
+
+        if len(fields) > 1:
             context_variable = 'fields'
         else:
             context_variable = 'field'
