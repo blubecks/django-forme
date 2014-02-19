@@ -22,11 +22,14 @@ class FormeNodeBase(template.Node):
         self.default = not target
 
         self.parent = None
-        if self.tag_name == 'forme' and not self.default:
+        if self.tag_name == 'forme' and self.target:
+            # Rendering forme, load default style
             from forme import loader
             self.templates = loader.get_default_style()
         else:
-            # Will be set from parent node or default style
+            # Defining forme style.
+            # TODO: Allow extending existing styles
+            # (eg. {% forme style "bare" using %})
             self.templates = defaultdict(SortedDict)
 
         child_nodes = self.validate_child_nodes()
