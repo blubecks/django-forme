@@ -1,6 +1,7 @@
 *.py[oc]
 
 # Build and test files
+docs/_build/
 dist/
 .tox/
 .pip-cache/
