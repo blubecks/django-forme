@@ -35,7 +35,7 @@ class FormeNodeBase(template.Node):
         self.update_templates()
 
         if self.tag_name == 'forme':
-            if action == 'using':
+            if self.action == 'using':
                 self.templates['forme'][''] = self.nodelist
 
             # Trigger templates update from top to bottom
@@ -45,8 +45,11 @@ class FormeNodeBase(template.Node):
             self.clean_nodelist()
 
     def clean_nodelist(self):
-        self.nodelist[:] = template.NodeList(
-            [node for node in self.nodelist if not self.is_template(node)])
+        if self.action == 'replace':
+            self.nodelist = template.NodeList()
+        else:
+            self.nodelist[:] = template.NodeList(
+                [node for node in self.nodelist if not self.is_template(node)])
 
         for node in self.get_direct_child_nodes():
             node.clean_nodelist()
@@ -103,11 +106,14 @@ class FormeNodeBase(template.Node):
 
     def update_templates_from_parent(self):
         if self.parent:
-            # Copy parent templates and override with all defined templates
-            for tag, templates in self.parent.templates.items():
+            # Copy parent templates and override with all defined templates.
+            # Copy only templates for valid child tags, including self
+            for node_class in self.valid_child_nodes + (self.__class__,):
+                tag = node_class.tag_name
+
+                templates = self.parent.templates.get(tag, {})
                 for target, tmpl in templates.items():
-                    if target not in self.templates[tag]:
-                        self.templates[tag][target] = tmpl
+                    self.templates[tag].setdefault(target, tmpl)
 
         # Trigger update for all child nodes.
         for node in self.get_direct_child_nodes():
