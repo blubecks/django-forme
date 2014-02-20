@@ -5,6 +5,7 @@ import copy
 
 from django import template
 from django.utils.datastructures import SortedDict
+from django.utils.safestring import mark_safe
 
 
 class FormeNodeBase(template.Node):
@@ -76,13 +77,17 @@ class FormeNodeBase(template.Node):
         for node in self.get_direct_child_nodes():
             node.parent = self
 
+            if node.action not in ['using', 'replace']:
+                continue
+
             # Define templates for all targets.
             if node.target:
                 for target in node.target:
-                    self.templates[node.tag_name][target.var] = node
+                    self.templates[node.tag_name][target.var] = node.nodelist
+
             # Define default template.
-            elif node.action == 'using':
-                self.templates[node.tag_name][''] = node
+            if node.action == 'using':
+                self.templates[node.tag_name][''] = node.nodelist
 
     def update_templates_from_parent(self):
         if self.parent:
@@ -171,7 +176,7 @@ class LabelNode(FormeNodeBase):
             'label': {
                 'id': field.id_for_label,
                 'label': field.label,
-                'tag': field.label_tag(),
+                'tag': mark_safe(field.label_tag()),
             },
         })
         output = super(LabelNode, self).render(context)

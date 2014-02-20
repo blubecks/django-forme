@@ -48,11 +48,9 @@ Context:
    - field: Actual field to be rendered.
   {% endcomment %}
   {% row using %}
-    {% for field in fields %}
-      {% errors %}
-      {% label %}
-      {% field %}
-    {% endfor %}
+    {% errors %}
+    {% label %}
+    {% field %}
   {% endrow %}
 
   {% comment %}
@@ -75,7 +73,7 @@ Context:
    - field: Actual field to be rendered.
    - label: Label object with attributes - id, tag, label.
   {% endcomment %}
-  {% label using %}{{ label }}{% endlabel %}
+  {% label using %}{{ label.tag }}{% endlabel %}
 
   {% comment %}
   Template for rendering field.
