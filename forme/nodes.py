@@ -59,10 +59,8 @@ class FormeNodeBase(template.Node):
         if not node:
             node = self
 
-        direct = self.direct_child_nodes or self.valid_child_nodes
-        indirect_nodes = tuple(set(self.all_forme_nodes) - set(direct))
-
-        return isinstance(node, tuple(indirect_nodes))
+        direct_nodes = self.direct_child_nodes or self.valid_child_nodes
+        return not isinstance(node, direct_nodes)
 
     def render(self, context):
         if self.nodelist:

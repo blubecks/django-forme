@@ -12,4 +12,4 @@ context = {
     'form': LoginForm()
 }
 
-skip = True
+skip = False
