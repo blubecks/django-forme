@@ -68,11 +68,23 @@ class FormeNodeBase(template.Node):
         if self.nodelist:
             return self.nodelist.render(context)
         else:
-            if self.target and self.target[0] in self.templates[self.tag_name]:
-                target = self.target[0]
+            if isinstance(self.target, list):
+                target = self.target[0] if len(self.target) else None
             else:
-                target = ''
-            return self.templates[self.tag_name][target].render(context)
+                target = self.target
+
+            if hasattr(self.templates, '_wrapped'):
+                # SimpleLazyObject in Dj1.5 is unsubscriptable.
+                bool(self.templates)
+                templates = self.templates._wrapped
+            else:
+                templates = self.templates
+
+            try:
+                tmpl = templates[self.tag_name][target]
+            except KeyError:
+                tmpl = templates[self.tag_name]['']
+            return tmpl.render(context)
 
     def update_templates(self):
         for node in self.get_direct_child_nodes(self.all_forme_nodes):

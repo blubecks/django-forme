@@ -9,7 +9,7 @@ class LoginForm(forms.Form):
     password = forms.CharField(label='Password')
 
 context = {
-    'form': LoginForm()
+    'form': LoginForm(label_suffix='')
 }
 
 skip = False
