@@ -34,6 +34,11 @@ def pytest_generate_tests(metafunc):
     metafunc.parametrize('case,template_name', args, ids=ids)
 
 
+def normalize_text(lines):
+    lines = [line.strip() for line in lines.split('\n')]
+    return '\n'.join(filter(None, lines))
+
+
 def test_template(case, template_name):
     """
     Render template blocks "template" and "expected" and compare them.
@@ -50,6 +55,7 @@ def test_template(case, template_name):
 
     from django.template.loader_tags import BlockNode
     nodes = tmpl.nodelist.get_nodes_by_type(BlockNode)
-    params = dict([(node.name, node.nodelist) for node in nodes])
+    params = dict([(node.name, normalize_text(node.nodelist.render(ctx)))
+                   for node in nodes])
 
-    assert params['template'].render(ctx) == params['expected'].render(ctx)
+    assert params['template'] == params['expected']
