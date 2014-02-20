@@ -5,6 +5,7 @@ import glob
 import os
 import os.path
 import sys
+import timeit
 
 from django import template
 import pytest
@@ -39,23 +40,72 @@ def normalize_text(lines):
     return '\n'.join(filter(None, lines))
 
 
-def test_template(case, template_name):
-    """
-    Render template blocks "template" and "expected" and compare them.
+class TestTemplates:
+    def load_context(self, case):
+        temp_ = __import__('{0}.context'.format(case),
+                           fromlist=['skip', 'context'], level=0)
+        ctx = template.Context(temp_.context)
+        skip = getattr(temp_, 'skip', False)
+        if skip:
+            pytest.skip()
+        return ctx
 
-    """
-    temp_ = __import__('{0}.context'.format(case),  fromlist=['skip', 'context'], level=0)
-    ctx = template.Context(temp_.context)
-    skip = getattr(temp_, 'skip', False)
-    if skip:
-        pytest.skip()
+    def load_template(self, template_name):
+        with open(template_name, 'r') as file_:
+            return template.Template(file_.read())
 
-    with open(template_name, 'r') as file_:
-        tmpl = template.Template(file_.read())
+    def test_template(self, case, template_name):
+        """
+        Render template blocks "template" and "expected" and compare them.
 
-    from django.template.loader_tags import BlockNode
-    nodes = tmpl.nodelist.get_nodes_by_type(BlockNode)
-    params = dict([(node.name, normalize_text(node.nodelist.render(ctx)))
-                   for node in nodes])
+        """
+        ctx = self.load_context(case)
+        tmpl = self.load_template(template_name)
 
-    assert params['template'] == params['expected']
+        from django.template.loader_tags import BlockNode
+        nodes = tmpl.nodelist.get_nodes_by_type(BlockNode)
+        params = dict([(node.name, normalize_text(node.nodelist.render(ctx)))
+                       for node in nodes])
+
+        assert params['template'] == params['expected']
+
+    @pytest.mark.profiling
+    def test_profilling(self, case, template_name):
+        ctx = self.load_context(case)
+
+        n = 1000
+
+        django_parse = lambda: template.Template('{{ form }}')
+        forme_parse = lambda: self.load_template(template_name)
+
+        times_parse = {
+            'django': timeit.Timer(django_parse).timeit(n),
+            'forme': timeit.Timer(forme_parse).timeit(n),
+        }
+
+        django_tmpl = django_parse()
+        tmpl = forme_parse()
+
+        from django.template.loader_tags import BlockNode
+        nodes = tmpl.nodelist.get_nodes_by_type(BlockNode)
+        params = dict([(node.name, node.nodelist)
+                       for node in nodes])
+
+        forme_tmpl = params['template']
+
+        django_render = lambda: django_tmpl.render(ctx)
+        forme_render = lambda: forme_tmpl.render(ctx)
+
+        times_render = {
+            'django': timeit.Timer(django_render).timeit(n),
+            'forme': timeit.Timer(forme_render).timeit(n),
+        }
+
+        print('-' * 40)
+        print('Template: {0}/{1}'.format(case, template_name))
+        print('--- Parsing')
+        for key, value in times_parse.items():
+            print('{0:^8} {1:.3f} ms'.format(key, value))
+        print('--- Rendering')
+        for key, value in times_render.items():
+            print('{0:^8} {1:.3f} ms'.format(key, value))
