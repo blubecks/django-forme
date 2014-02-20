@@ -43,7 +43,14 @@ class FormeNodeBase(template.Node):
             # Trigger nodes cleanup
             self.clean_nodelist()
 
-    def get_direct_child_nodes_by_type(self, nodetype=None):
+    def clean_nodelist(self):
+        self.nodelist[:] = template.NodeList(
+            [node for node in self.nodelist if not self.is_template(node)])
+
+        for node in self.get_direct_child_nodes():
+            node.clean_nodelist()
+
+    def get_direct_child_nodes(self, nodetype=None):
         if not nodetype:
             nodetype = self.valid_child_nodes
         return (node for node in self.nodelist if isinstance(node, nodetype))
@@ -57,13 +64,6 @@ class FormeNodeBase(template.Node):
 
         return isinstance(node, tuple(indirect_nodes))
 
-    def clean_nodelist(self):
-        self.nodelist[:] = template.NodeList(
-            [node for node in self.nodelist if not self.is_template(node)])
-
-        for node in self.get_direct_child_nodes_by_type():
-            node.clean_nodelist()
-
     def render(self, context):
         if self.nodelist:
             return self.nodelist.render(context)
@@ -74,26 +74,8 @@ class FormeNodeBase(template.Node):
                 target = ''
             return self.templates[self.tag_name][target].render(context)
 
-    def validate_child_nodes(self):
-        child_nodes = self.get_direct_child_nodes_by_type(self.all_forme_nodes)
-
-        if not child_nodes:
-            return []
-
-        if self.valid_child_nodes:
-            invalid_nodes = (node for node in child_nodes
-                             if not isinstance(node, self.valid_child_nodes))
-        else:
-            # No child nodes are allowed
-            invalid_nodes = child_nodes
-
-        if any(invalid_nodes):
-            msg = ("Node {0} can\'t contain following nodes: {1}"
-                   .format(self.__class__, invalid_nodes))
-            raise template.TemplateSyntaxError(msg)
-
     def update_templates(self):
-        for node in self.get_direct_child_nodes_by_type():
+        for node in self.get_direct_child_nodes():
             node.parent = self
 
             # Define templates for all targets.
@@ -113,8 +95,26 @@ class FormeNodeBase(template.Node):
                         self.templates[tag][target] = tmpl
 
         # Trigger update for all child nodes.
-        for node in self.get_direct_child_nodes_by_type():
+        for node in self.get_direct_child_nodes():
             node.update_templates_from_parent()
+
+    def validate_child_nodes(self):
+        child_nodes = self.get_direct_child_nodes(self.all_forme_nodes)
+
+        if not child_nodes:
+            return []
+
+        if self.valid_child_nodes:
+            invalid_nodes = (node for node in child_nodes
+                             if not isinstance(node, self.valid_child_nodes))
+        else:
+            # No child nodes are allowed
+            invalid_nodes = child_nodes
+
+        if any(invalid_nodes):
+            msg = ("Node {0} can\'t contain following nodes: {1}"
+                   .format(self.__class__, invalid_nodes))
+            raise template.TemplateSyntaxError(msg)
 
 
 class FieldNode(FormeNodeBase):
