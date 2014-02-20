@@ -109,7 +109,7 @@ class TestNodeTemplates:
     def test_empty_templates(self):
         tmpl = '{% forme using %}{% endforme %}'
         node = tag2nodes(tmpl)[0]
-        assert node.templates.keys() == ['forme']
+        assert list(node.templates.keys()) == ['forme']
 
     def test_default_field_template(self):
         tmpl = '{% forme using %}{% field using %}{% endfield %}{% endforme %}'
