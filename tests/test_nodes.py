@@ -34,7 +34,7 @@ def test_node_factory():
     # All valid tags should return Node subclass
     for tag in FormeParser.valid_tags:
         node = nodes.node_factory(tag, *default_node_args)
-        assert tag in nodes.node_classes
+        assert tag in nodes.tag_map
         assert tag == node.tag_name
         assert isinstance(node,
                           template.Node)
@@ -48,8 +48,8 @@ class TestChildNodes:
     tags = ("field errors label row fieldset"
             " nonfielderrors hiddenfields".split())
 
-    nodes_tag_map = dict(zip(nodes.node_classes.values(),
-                             nodes.node_classes.keys()))
+    nodes_tag_map = dict(zip(nodes.tag_map.values(),
+                             nodes.tag_map.keys()))
 
     def top_template(self, string):
         return ("{{% load forme %}}{{% forme using %}}{string}{{% endforme %}}"
@@ -61,7 +61,7 @@ class TestChildNodes:
 
     def valid_tags(self, tag):
         return [self.nodes_tag_map[node] for node in
-                nodes.node_classes[tag].valid_child_nodes]
+                nodes.tag_map[tag].valid_child_nodes]
 
     def invalid_tags(self, tag):
         return set(self.tags) - set(self.valid_tags(tag))

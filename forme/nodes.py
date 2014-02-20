@@ -8,13 +8,14 @@ from django.utils.datastructures import SortedDict
 
 
 class FormeNodeBase(template.Node):
+    tag_name = None
+
     direct_child_nodes = ()
     valid_child_nodes = ()
     all_forme_nodes = ()
     target_required = False
 
-    def __init__(self, tag_name, target=None, action=None, nodelist=None):
-        self.tag_name = tag_name
+    def __init__(self, target=None, action=None, nodelist=None):
         self.target = target
         self.action = action or 'default'
         self.nodelist = nodelist or template.NodeList()
@@ -34,7 +35,7 @@ class FormeNodeBase(template.Node):
         self.update_templates(child_nodes)
         self.remove_template_nodes()
 
-        if tag_name == 'forme' and action == 'using':
+        if self.tag_name == 'forme' and action == 'using':
             self.templates['forme'][''] = self.nodelist
 
     def get_direct_child_nodes_by_type(self, nodetype):
@@ -115,6 +116,7 @@ class FieldNode(FormeNodeBase):
     'field' variable is already pushed by row node.
 
     """
+    tag_name = 'field'
 
 
 class ErrorsNode(FormeNodeBase):
@@ -123,6 +125,8 @@ class ErrorsNode(FormeNodeBase):
     which is alias to field.errors.
 
     """
+    tag_name = 'errors'
+
     def render(self, context):
         errors = getattr(context['field'], 'errors', None)
         if not errors:
@@ -143,6 +147,7 @@ class LabelNode(FormeNodeBase):
         tag: alias for field.label_tag
 
     """
+    tag_name = 'label'
     # It's a bit tricky, will be added in future.
     # valid_child_nodes = (FieldNode, ErrorsNode)
 
@@ -168,6 +173,7 @@ class RowNode(FormeNodeBase):
     is responsible for looping over fields..
 
     """
+    tag_name = 'row'
     valid_child_nodes = (FieldNode, LabelNode, ErrorsNode)
 
     def render(self, context):
@@ -196,6 +202,7 @@ class FieldsetNode(FormeNodeBase):
     of rendered field objects.
 
     """
+    tag_name = 'fieldset'
     direct_child_nodes = (RowNode,)
     valid_child_nodes = direct_child_nodes + RowNode.valid_child_nodes
 
@@ -219,6 +226,8 @@ class HiddenFieldsNode(FormeNodeBase):
     into context as an alias for form.hidden_fields().
 
     """
+    tag_name = 'hiddenfields'
+
     def render(self, context):
         hidden_fields = context['form'].hidden_fields()
         if not hidden_fields:
@@ -236,6 +245,8 @@ class NonFieldErrorsNode(FormeNodeBase):
     into context which is an alias to form.non_fields_errors().
 
     """
+    tag_name = 'nonfielderrors'
+
     def render(self, context):
         errors = context['form'].non_field_errors()
         if not errors:
@@ -253,6 +264,8 @@ class FormeNode(FormeNodeBase):
     rendered form.
 
     """
+    tag_name = 'forme'
+
     direct_child_nodes = HiddenFieldsNode, NonFieldErrorsNode, FieldsetNode
     valid_child_nodes = direct_child_nodes + FieldsetNode.valid_child_nodes
     target_required = True
@@ -274,22 +287,16 @@ class FormeNode(FormeNodeBase):
         return output
 
 
-node_classes = {
-    'forme': FormeNode,
-    'fieldset': FieldsetNode,
-    'row': RowNode,
-    'label': LabelNode,
-    'field': FieldNode,
-    'hiddenfields': HiddenFieldsNode,
-    'nonfielderrors': NonFieldErrorsNode,
-    'errors': ErrorsNode,
-}
-FormeNodeBase.all_forme_nodes = tuple(node_classes.values())
+forme_nodes = (FormeNode, NonFieldErrorsNode, HiddenFieldsNode, FieldsetNode,
+               RowNode, ErrorsNode, LabelNode, FieldNode)
+tag_map = dict([(node.tag_name, node) for node in forme_nodes])
+
+FormeNodeBase.all_forme_nodes = forme_nodes
 
 
 def node_factory(tag_name, *args, **kwargs):
     try:
-        return node_classes[tag_name](tag_name, *args, **kwargs)
+        return tag_map[tag_name](*args, **kwargs)
     except KeyError:
         raise KeyError('Missing node class mapping for tag name {name}'
                        .format(name=tag_name))

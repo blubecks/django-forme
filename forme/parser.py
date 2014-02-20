@@ -4,13 +4,12 @@ from __future__ import unicode_literals
 import copy
 from django import template
 
-from forme.nodes import node_factory
+from forme.nodes import node_factory, tag_map
 
 
 class FormeParser(object):
-    valid_tags = ('forme fieldset row label field hiddenfields'
-                  ' nonfielderrors errors'.split())
-    common_actions = 'exclude using replace template'.split()
+    valid_tags = tag_map.keys()
+    common_actions = 'using replace'.split()
 
     def __init__(self, parser, token):
         self.parser = parser
@@ -22,9 +21,9 @@ class FormeParser(object):
         actions = self.common_actions
 
         if self.tag_name == 'field':
-            actions.append('hide')
-
-        return actions
+            return actions + ['hide']
+        else:
+            return actions
 
     def parse(self):
         parts = copy.copy(self.parts)
@@ -40,7 +39,7 @@ class FormeParser(object):
         except IndexError:
             action = 'default'
         else:
-            if action in ['using', 'replace']:
+            if action in self.valid_actions:
                 # Last token is action, remove it
                 parts.pop()
             else:
