@@ -1,6 +1,9 @@
 Django Forme
 ============
 
+.. warning:: This is documentation to first pre release. Most of described
+   functionality isn't implemented yet.
+
 Contents:
 
 .. toctree::
