@@ -117,6 +117,9 @@ class FieldNode(FormeNodeBase):
     """
     tag_name = 'field'
 
+    def __repr__(self):
+        return '<Field node>'
+
 
 class ErrorsNode(FormeNodeBase):
     """
@@ -125,6 +128,9 @@ class ErrorsNode(FormeNodeBase):
 
     """
     tag_name = 'errors'
+
+    def __repr__(self):
+        return '<Errors node>'
 
     def render(self, context):
         errors = getattr(context['field'], 'errors', None)
@@ -150,6 +156,9 @@ class LabelNode(FormeNodeBase):
     # It's a bit tricky, will be added in future.
     # valid_child_nodes = (FieldNode, ErrorsNode)
 
+    def __repr__(self):
+        return '<Label node>'
+
     def render(self, context):
         field = context['field']
         context.update({
@@ -174,6 +183,9 @@ class RowNode(FormeNodeBase):
     """
     tag_name = 'row'
     valid_child_nodes = (FieldNode, LabelNode, ErrorsNode)
+
+    def __repr__(self):
+        return '<Row node>'
 
     def render(self, context):
         form = context['form']
@@ -205,6 +217,9 @@ class FieldsetNode(FormeNodeBase):
     direct_child_nodes = (RowNode,)
     valid_child_nodes = direct_child_nodes + RowNode.valid_child_nodes
 
+    def __repr__(self):
+        return '<Fieldset node>'
+
     def render(self, context):
         form = context['form']
         fields = [form[field.resolve(context)] for field in self.target]
@@ -227,6 +242,9 @@ class HiddenFieldsNode(FormeNodeBase):
     """
     tag_name = 'hiddenfields'
 
+    def __repr__(self):
+        return '<HiddenFields node>'
+
     def render(self, context):
         hidden_fields = context['form'].hidden_fields()
         if not hidden_fields:
@@ -245,6 +263,9 @@ class NonFieldErrorsNode(FormeNodeBase):
 
     """
     tag_name = 'nonfielderrors'
+
+    def __repr__(self):
+        return '<NonFieldErrors node>'
 
     def render(self, context):
         errors = context['form'].non_field_errors()
@@ -272,6 +293,9 @@ class FormeNode(FormeNodeBase):
         if not target and not action:
             raise template.TemplateSyntaxError('Missing form parameter.')
         super(FormeNode, self).__init__(target, action, nodelist)
+
+    def __repr__(self):
+        return '<Forme node>'
 
     def render(self, context):
         forms = [form.resolve(context) for form in self.target]
