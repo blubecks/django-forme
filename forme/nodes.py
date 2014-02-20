@@ -1,7 +1,6 @@
 # coding: utf-8
 from __future__ import unicode_literals
 from collections import defaultdict
-import copy
 
 from django import template
 from django.utils.datastructures import SortedDict
@@ -158,10 +157,8 @@ class FieldNode(FormeNodeBase):
         return '<Field node>'
 
     def render(self, context):
-        field_name = context['field'].name
-        self.target = field_name
+        self.target = context['field'].name
         return super(FieldNode, self).render(context)
-
 
 
 class ErrorsNode(FormeNodeBase):
@@ -180,7 +177,7 @@ class ErrorsNode(FormeNodeBase):
         if not errors:
             return ''
 
-        field_name = context['field']
+        self.target = context['field'].name
 
         context.update({'errors': errors})
         output = super(ErrorsNode, self).render(context)
@@ -206,6 +203,9 @@ class LabelNode(FormeNodeBase):
 
     def render(self, context):
         field = context['field']
+
+        self.target = field.name
+
         context.update({
             'label': {
                 'id': field.id_for_label,

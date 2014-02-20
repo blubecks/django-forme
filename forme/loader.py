@@ -1,5 +1,6 @@
 # coding: utf-8
 from __future__ import unicode_literals
+import copy
 
 from django.template import Template, loader
 from django.utils.functional import SimpleLazyObject
@@ -43,7 +44,7 @@ def preload_styles(styles_config=None):
 def get_default_style(styles_config=None):
     if not styles_config:
         styles_config = styles
-    return styles_config[settings.FORME_DEFAULT_STYLE]
+    return copy.deepcopy(styles_config[settings.FORME_DEFAULT_STYLE])
 
 
 # Needs to be lazy object since template tags aren't loaded yet.
