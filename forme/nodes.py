@@ -24,7 +24,14 @@ class FormeNodeBase(template.Node):
         if self.tag_name == 'forme' and self.target:
             # Rendering forme, load default style
             from forme import loader
-            self.templates = loader.get_default_style()
+            templates = loader.get_default_style()
+
+            # Workaround for unsubscriptable SimpleLazyObject in Dj1.5
+            if hasattr(templates, '_wrapped'):
+                bool(templates)
+                self.templates = templates._wrapped
+            else:
+                self.templates = templates
         else:
             # Defining forme style.
             # TODO: Allow extending existing styles
@@ -57,18 +64,11 @@ class FormeNodeBase(template.Node):
         return (node for node in self.nodelist if isinstance(node, nodetype))
 
     def get_template(self, tag, target, context):
-        if hasattr(self.templates, '_wrapped'):
-            # SimpleLazyObject in Dj1.5 is unsubscriptable.
-            bool(self.templates)
-            templates = self.templates._wrapped
-        else:
-            templates = self.templates
-
-        self.templates[tag] = self.resolve_template_keys(templates[tag],
-                                                         context)
+        self.templates[tag] = self.resolve_template_keys(
+            self.templates[tag], context)
 
         try:
-            tmpl = templates[tag][target]
+            tmpl = self.templates[tag][target]
         except KeyError:
             if self.parent:
                 tmpl = self.parent.get_template(tag, target, context)
