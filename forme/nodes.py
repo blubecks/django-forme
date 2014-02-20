@@ -38,9 +38,6 @@ class FormeNodeBase(template.Node):
             if self.action == 'using':
                 self.templates['forme'][''] = self.nodelist
 
-            # Trigger templates update from top to bottom
-            self.update_templates_from_parent()
-
             # Trigger nodes cleanup
             self.clean_nodelist()
 
@@ -59,6 +56,26 @@ class FormeNodeBase(template.Node):
             nodetype = self.valid_child_nodes
         return (node for node in self.nodelist if isinstance(node, nodetype))
 
+    def get_template(self, tag, target, context):
+        if hasattr(self.templates, '_wrapped'):
+            # SimpleLazyObject in Dj1.5 is unsubscriptable.
+            bool(self.templates)
+            templates = self.templates._wrapped
+        else:
+            templates = self.templates
+
+        self.templates[tag] = self.resolve_template_keys(templates[tag],
+                                                         context)
+
+        try:
+            tmpl = templates[tag][target]
+        except KeyError:
+            if self.parent:
+                tmpl = self.parent.get_template(tag, target, context)
+            else:
+                tmpl = None
+        return tmpl
+
     def is_template(self, node):
         if not node:
             node = self
@@ -71,23 +88,29 @@ class FormeNodeBase(template.Node):
         if self.nodelist:
             return self.nodelist.render(context)
         else:
-            if isinstance(self.target, list):
-                target = self.target[0] if len(self.target) else None
-            else:
-                target = self.target
+            possible_targets = ['']
+            if self.tag_name != 'forme':
+                if isinstance(self.target, list):
+                    target = self.target[0] if len(self.target) else None
+                else:
+                    target = self.target
+                possible_targets.insert(0, target)
 
-            if hasattr(self.templates, '_wrapped'):
-                # SimpleLazyObject in Dj1.5 is unsubscriptable.
-                bool(self.templates)
-                templates = self.templates._wrapped
-            else:
-                templates = self.templates
+            for possibility in possible_targets:
+                tmpl = self.get_template(self.tag_name, possibility, context)
+                if tmpl:
+                    return tmpl.render(context)
 
-            try:
-                tmpl = templates[self.tag_name][target]
-            except KeyError:
-                tmpl = templates[self.tag_name]['']
-            return tmpl.render(context)
+            msg = ('Missing template for tag {0}'
+                   .format(self.tag_name))
+            raise template.TemplateSyntaxError(msg)
+
+    def resolve_template_keys(self, templates, context):
+        for target, tmpl in templates.items():
+            if isinstance(target, template.Variable):
+                del templates[target]
+                templates[target.resolve(context)] = tmpl
+        return templates
 
     def update_templates(self):
         for node in self.get_direct_child_nodes(self.all_forme_nodes):
@@ -99,25 +122,10 @@ class FormeNodeBase(template.Node):
             # Define templates for all targets.
             if node.target:
                 for target in node.target:
-                    self.templates[node.tag_name][target.var] = node.nodelist
+                    self.templates[node.tag_name][target] = node.nodelist
             # Define default template.
             elif node.action == 'using':
                 self.templates[node.tag_name][''] = node.nodelist
-
-    def update_templates_from_parent(self):
-        if self.parent:
-            # Copy parent templates and override with all defined templates.
-            # Copy only templates for valid child tags, including self
-            for node_class in self.valid_child_nodes + (self.__class__,):
-                tag = node_class.tag_name
-
-                templates = self.parent.templates.get(tag, {})
-                for target, tmpl in templates.items():
-                    self.templates[tag].setdefault(target, tmpl)
-
-        # Trigger update for all child nodes.
-        for node in self.get_direct_child_nodes():
-            node.update_templates_from_parent()
 
     def validate_child_nodes(self):
         child_nodes = self.get_direct_child_nodes(self.all_forme_nodes)
@@ -149,6 +157,12 @@ class FieldNode(FormeNodeBase):
     def __repr__(self):
         return '<Field node>'
 
+    def render(self, context):
+        field_name = context['field'].name
+        self.target = field_name
+        return super(FieldNode, self).render(context)
+
+
 
 class ErrorsNode(FormeNodeBase):
     """
@@ -165,6 +179,8 @@ class ErrorsNode(FormeNodeBase):
         errors = getattr(context['field'], 'errors', None)
         if not errors:
             return ''
+
+        field_name = context['field']
 
         context.update({'errors': errors})
         output = super(ErrorsNode, self).render(context)

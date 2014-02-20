@@ -139,20 +139,21 @@ class TestNodeTemplates:
                 '{% endfield %}{% endforme %}')
         forme = tag2nodes(tmpl)[0]
         assert 'field' in forme.templates
-        assert '"username"' in forme.templates['field']
+        assert '"username"' in \
+               [var.var for var in forme.templates['field'].keys()]
 
     def test_template_order_preserved(self):
         tmpl = ('{% forme using %}{% field "username" using %}{% endfield %}'
                 '{% field "password" using %}{% endfield %}{% endforme %}')
         forme = tag2nodes(tmpl)[0]
-        assert ['"username"', '"password"'] \
-                == list(forme.templates['field'].keys())
+        assert ['"username"', '"password"']\
+                == [var.var for var in forme.templates['field'].keys()]
 
         tmpl = ('{% forme using %}{% field "password" using %}{% endfield %}'
                 '{% field "username" using %}{% endfield %}{% endforme %}')
         forme = tag2nodes(tmpl)[0]
         assert ['"password"', '"username"'] \
-                == list(forme.templates['field'].keys())
+                == [var.var for var in forme.templates['field'].keys()]
 
     def test_override_parent_template(self):
         tmpl = ('{% forme using %}'
