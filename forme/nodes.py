@@ -30,17 +30,25 @@ class FormeNodeBase(template.Node):
             # (eg. {% forme style "bare" using %})
             self.templates = defaultdict(SortedDict)
 
-        child_nodes = self.validate_child_nodes()
-        self.update_templates(child_nodes)
-        self.remove_template_nodes()
+        self.validate_child_nodes()
+        self.update_templates()
 
-        if self.tag_name == 'forme' and action == 'using':
-            self.templates['forme'][''] = self.nodelist
+        if self.tag_name == 'forme':
+            if action == 'using':
+                self.templates['forme'][''] = self.nodelist
 
-    def get_direct_child_nodes_by_type(self, nodetype):
-        return [node for node in self.nodelist if isinstance(node, nodetype)]
+            # Trigger templates update from top to bottom
+            self.update_templates_from_parent()
 
-    def is_template(self, node=None):
+            # Trigger nodes cleanup
+            self.clean_nodelist()
+
+    def get_direct_child_nodes_by_type(self, nodetype=None):
+        if not nodetype:
+            nodetype = self.valid_child_nodes
+        return (node for node in self.nodelist if isinstance(node, nodetype))
+
+    def is_template(self, node):
         if not node:
             node = self
 
@@ -49,9 +57,12 @@ class FormeNodeBase(template.Node):
 
         return isinstance(node, tuple(indirect_nodes))
 
-    def remove_template_nodes(self):
-        self.nodelist = template.NodeList(
+    def clean_nodelist(self):
+        self.nodelist[:] = template.NodeList(
             [node for node in self.nodelist if not self.is_template(node)])
+
+        for node in self.get_direct_child_nodes_by_type():
+            node.clean_nodelist()
 
     def render(self, context):
         if self.nodelist:
@@ -63,14 +74,6 @@ class FormeNodeBase(template.Node):
                 target = ''
             return self.templates[self.tag_name][target].render(context)
 
-    def set_parent(self, parent):
-        self.parent = parent
-
-        # Copy parent templates and override with all defined templates
-        templates = copy.deepcopy(parent.templates)
-        templates.update(self.templates)
-        self.templates = templates
-
     def validate_child_nodes(self):
         child_nodes = self.get_direct_child_nodes_by_type(self.all_forme_nodes)
 
@@ -78,8 +81,8 @@ class FormeNodeBase(template.Node):
             return []
 
         if self.valid_child_nodes:
-            invalid = lambda node: not isinstance(node, self.valid_child_nodes)
-            invalid_nodes = filter(invalid, child_nodes)
+            invalid_nodes = (node for node in child_nodes
+                             if not isinstance(node, self.valid_child_nodes))
         else:
             # No child nodes are allowed
             invalid_nodes = child_nodes
@@ -89,24 +92,29 @@ class FormeNodeBase(template.Node):
                    .format(self.__class__, invalid_nodes))
             raise template.TemplateSyntaxError(msg)
 
-        return child_nodes
+    def update_templates(self):
+        for node in self.get_direct_child_nodes_by_type():
+            node.parent = self
 
-    def update_templates(self, child_nodes):
-        templates = defaultdict(SortedDict)
-        for node in child_nodes:
             # Define templates for all targets.
             if node.target:
                 for target in node.target:
-                    templates[node.tag_name][target.var] = node
+                    self.templates[node.tag_name][target.var] = node
             # Define default template.
             elif node.action == 'using':
-                templates[node.tag_name][''] = node
+                self.templates[node.tag_name][''] = node
 
-        # Set missing child templates from self
-        for node in child_nodes:
-            node.set_parent(self)
+    def update_templates_from_parent(self):
+        if self.parent:
+            # Copy parent templates and override with all defined templates
+            for tag, templates in self.parent.templates.items():
+                for target, tmpl in templates.items():
+                    if target not in self.templates[tag]:
+                        self.templates[tag][target] = tmpl
 
-        self.templates.update(templates)
+        # Trigger update for all child nodes.
+        for node in self.get_direct_child_nodes_by_type():
+            node.update_templates_from_parent()
 
 
 class FieldNode(FormeNodeBase):
