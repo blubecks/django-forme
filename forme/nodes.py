@@ -13,7 +13,6 @@ class FormeNodeBase(template.Node):
     direct_child_nodes = ()
     valid_child_nodes = ()
     all_forme_nodes = ()
-    target_required = False
 
     def __init__(self, target=None, action=None, nodelist=None):
         self.target = target
@@ -268,7 +267,11 @@ class FormeNode(FormeNodeBase):
 
     direct_child_nodes = HiddenFieldsNode, NonFieldErrorsNode, FieldsetNode
     valid_child_nodes = direct_child_nodes + FieldsetNode.valid_child_nodes
-    target_required = True
+
+    def __init__(self, target=None, action=None, nodelist=None):
+        if not target and not action:
+            raise template.TemplateSyntaxError('Missing form parameter.')
+        super(FormeNode, self).__init__(target, action, nodelist)
 
     def render(self, context):
         forms = [form.resolve(context) for form in self.target]

@@ -44,6 +44,21 @@ def test_node_factory():
         nodes.node_factory('42_fish')
 
 
+def test_forme_requires_target_or_action():
+    with pytest.raises(template.TemplateSyntaxError):
+        nodes.node_factory('forme')
+
+    try:
+        nodes.node_factory('forme', action='default')
+    except template.TemplateSyntaxError:
+        pytest.fail('forme tag with action and without target failed.')
+
+    try:
+        nodes.node_factory('forme', target=template.Variable('form'))
+    except template.TemplateSyntaxError:
+        pytest.fail('forme tag without action and with target failed.')
+
+
 class TestChildNodes:
     tags = ("field errors label row fieldset"
             " nonfielderrors hiddenfields".split())
