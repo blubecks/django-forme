@@ -10,6 +10,7 @@ Contents:
    :maxdepth: 2
 
    tags
+   performance
 
 What's this
 ===========
