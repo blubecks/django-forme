@@ -48,9 +48,11 @@ Context:
    - field: Actual field to be rendered.
   {% endcomment %}
   {% row using %}
-    {% errors %}
-    {% label %}
-    {% field %}
+    {% for field in fields %}
+      {% errors %}
+      {% label %}
+      {% field %}
+    {% endfor %}
   {% endrow %}
 
   {% comment %}

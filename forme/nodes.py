@@ -198,19 +198,24 @@ class RowNode(FormeNodeBase):
     def render(self, context):
         form = context['form']
 
+        output = ''
         if not self.target:
             fields = context['fieldset_fields']
+            for field in fields:
+                context.update({'field': field})
+                output += super(RowNode, self).render(context)
+                context.pop()
         else:
             fields = [form[field.resolve(context)] for field in self.target]
 
-        if len(fields) > 1:
-            context_variable = 'fields'
-        else:
-            context_variable = 'field'
+            if len(fields) > 1:
+                context_variable = 'fields'
+            else:
+                context_variable = 'field'
 
-        context.update({context_variable: fields})
-        output = super(RowNode, self).render(context)
-        context.pop()
+            context.update({context_variable: fields})
+            output += super(RowNode, self).render(context)
+            context.pop()
 
         return output
 
