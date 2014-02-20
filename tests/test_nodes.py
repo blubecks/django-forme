@@ -134,10 +134,6 @@ class TestNodeTemplates:
         # Default for all fields.
         assert '' in forme.templates['field']
 
-        # Traverse to field node and check parent
-        field = forme.templates['field']['']
-        assert field.parent == forme
-
     def test_target_field_template(self):
         tmpl = ('{% forme using %}{% field "username" using %}'
                 '{% endfield %}{% endforme %}')
@@ -165,10 +161,10 @@ class TestNodeTemplates:
                 '{% endfieldset %}{% endforme %}')
 
         forme = tag2nodes(tmpl)[0]
-        fieldset = forme.templates['fieldset']['']
+        fieldset = forme.nodelist.get_nodes_by_type(nodes.FieldsetNode)[0]
 
         # Get content of first node (TextNode) in field's nodelist
-        text_node = lambda node: node.templates['field'][''].nodelist[0].s
+        text_node = lambda node: node.templates['field'][''][0].s
         assert text_node(forme) == 'Parent'
         assert text_node(fieldset) == 'Child'
 

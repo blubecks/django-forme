@@ -61,7 +61,8 @@ class FormeNodeBase(template.Node):
             node = self
 
         direct_nodes = self.direct_child_nodes or self.valid_child_nodes
-        return not isinstance(node, direct_nodes)
+        indirect_nodes = tuple(set(self.all_forme_nodes) - set(direct_nodes))
+        return isinstance(node, indirect_nodes)
 
     def render(self, context):
         if self.nodelist:
@@ -74,19 +75,18 @@ class FormeNodeBase(template.Node):
             return self.templates[self.tag_name][target].render(context)
 
     def update_templates(self):
-        for node in self.get_direct_child_nodes():
+        for node in self.get_direct_child_nodes(self.all_forme_nodes):
             node.parent = self
 
-            if node.action not in ['using', 'replace']:
+            if node.action != 'using':
                 continue
 
             # Define templates for all targets.
             if node.target:
                 for target in node.target:
                     self.templates[node.tag_name][target.var] = node.nodelist
-
             # Define default template.
-            if node.action == 'using':
+            elif node.action == 'using':
                 self.templates[node.tag_name][''] = node.nodelist
 
     def update_templates_from_parent(self):
