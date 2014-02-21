@@ -101,11 +101,13 @@ class TestTemplates:
             'forme': timeit.Timer(forme_render).timeit(n),
         }
 
+        slower = lambda d: d['forme'] / d['django']
+
         print('-' * 40)
-        print('Template: {0}/{1}'.format(case, template_name))
-        print('--- Parsing')
+        print('Template: {0}/{1}'.format(case, os.path.basename(template_name)))
+        print('--- Parsing (Slower {0:.1f}x)'.format(slower(times_parse)))
         for key, value in times_parse.items():
             print('{0:^8} {1:.3f} ms'.format(key, value))
-        print('--- Rendering')
+        print('--- Rendering (Slower {0:.1f}x)'.format(slower(times_render)))
         for key, value in times_render.items():
             print('{0:^8} {1:.3f} ms'.format(key, value))
