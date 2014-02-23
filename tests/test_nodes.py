@@ -30,14 +30,14 @@ def pytest_generate_tests(metafunc):
 
 
 def test_node_factory():
-    default_node_args = ('default', 'default', template.NodeList())
+    default_node_args = ('default',)
     # All valid tags should return Node subclass
     for tag in FormeParser.valid_tags:
-        node = nodes.node_factory(tag, *default_node_args)
         assert tag in nodes.tag_map
+
+        node = nodes.node_factory(tag, *default_node_args)
         assert tag == node.tag_name
-        assert isinstance(node,
-                          template.Node)
+        assert isinstance(node, template.Node)
 
     # Unknown tag
     with pytest.raises(KeyError):
