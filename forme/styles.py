@@ -2,18 +2,53 @@
 from __future__ import unicode_literals
 from collections import namedtuple, defaultdict
 
-from django.utils.datastructures import SortedDict
+from django import template
 
 Variant = namedtuple('Variant', 'tag target')
 
 
-class Default:
-    pass
+class Default: pass
+class Unresolved: pass
+
+
+class VariableKey(object):
+    def __init__(self, variable):
+        self.variable = variable
+        self.resolved = Unresolved
+
+    def resolve(self, context):
+        self.resolved = self.variable.resolve(context)
+
+    def __eq__(self, other):
+        print(other)
+        if isinstance(other, VariableKey):
+            if self.resolved is Unresolved:
+                return self.variable.var == other.variable.var
+            else:
+                return self.resolved == other.resolved
+        elif isinstance(other, template.Variable):
+            return self.variable.var == other.var
+        else:
+            return self.resolved == other
+
+    def __repr__(self):
+        msg = "<VariableKey variable: {0}, resolved: {1}>"
+        return msg.format(self.variable, self.resolved)
+
+
+class VariableDict(dict):
+    def __contains__(self, item):
+        return any(True for key in self if key == item)
+
+    def resolve(self, context):
+        for variable, value in self:
+            if isinstance(variable, template.Variable):
+                variable.resolve(context)
 
 
 class Style(object):
     def __init__(self):
-        self._data = defaultdict(SortedDict)
+        self._data = defaultdict(VariableDict)
 
     def __contains__(self, key):
         key = self._normalize_key(key)
