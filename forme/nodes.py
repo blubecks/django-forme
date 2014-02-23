@@ -5,7 +5,7 @@ from collections import defaultdict
 from django import template
 from django.utils.datastructures import SortedDict
 
-from forme.context import Label
+from forme.context import Label, update_context
 
 
 class FormeNodeBase(template.Node):
@@ -100,9 +100,9 @@ class FormeNodeBase(template.Node):
                 if tmpl:
                     return tmpl.render(context)
 
-            msg = ('Missing template for tag {0}'
-                   .format(self.tag_name))
-            raise template.TemplateSyntaxError(msg)
+        msg = ('Missing template for tag {0}'
+               .format(self.tag_name))
+        raise template.TemplateSyntaxError(msg)
 
     def resolve_template_keys(self, templates, context):
         for target, tmpl in templates.items():
@@ -178,10 +178,8 @@ class ErrorsNode(FormeNodeBase):
 
         self.target = context['field'].name
 
-        context.update({'errors': errors})
-        output = super(ErrorsNode, self).render(context)
-        context.pop()
-        return output
+        with update_context(context, {'errors': errors}):
+            return super(ErrorsNode, self).render(context)
 
 
 class LabelNode(FormeNodeBase):
@@ -205,12 +203,8 @@ class LabelNode(FormeNodeBase):
 
         self.target = field.name
 
-        context.update({
-            'label': Label.create(field),
-        })
-        output = super(LabelNode, self).render(context)
-        context.pop()
-        return output
+        with update_context(context, {'label': Label.create(field)}):
+            return super(LabelNode, self).render(context)
 
 
 class RowNode(FormeNodeBase):
@@ -234,9 +228,8 @@ class RowNode(FormeNodeBase):
         if not self.target:
             fields = context['fieldset_fields']
             for field in fields:
-                context.update({'field': field})
-                output += super(RowNode, self).render(context)
-                context.pop()
+                with update_context(context, {'field': field}):
+                    output += super(RowNode, self).render(context)
         else:
             fields = [form[field.resolve(context)] for field in self.target]
 
@@ -245,9 +238,8 @@ class RowNode(FormeNodeBase):
             else:
                 context_variable = 'field'
 
-            context.update({context_variable: fields})
-            output += super(RowNode, self).render(context)
-            context.pop()
+            with update_context(context, {context_variable: fields}):
+                output += super(RowNode, self).render(context)
 
         return output
 
@@ -272,11 +264,8 @@ class FieldsetNode(FormeNodeBase):
         if not any(fields):
             fields = list(form)
 
-        context.update({'fieldset_fields': fields})
-        output = super(FieldsetNode, self).render(context)
-        context.pop()
-
-        return output
+        with update_context(context, {'fieldset_fields': fields}):
+            return super(FieldsetNode, self).render(context)
 
 
 class HiddenFieldsNode(FormeNodeBase):
@@ -295,10 +284,8 @@ class HiddenFieldsNode(FormeNodeBase):
         if not hidden_fields:
             return ''
 
-        context.update({'hidden_fields': hidden_fields})
-        output = super(HiddenFieldsNode, self).render(context)
-        context.pop()
-        return output
+        with update_context(context, {'hidden_fields': hidden_fields}):
+            return super(HiddenFieldsNode, self).render(context)
 
 
 class NonFieldErrorsNode(FormeNodeBase):
@@ -317,10 +304,8 @@ class NonFieldErrorsNode(FormeNodeBase):
         if not errors:
             return ''
 
-        context.update({'non_field_errors': errors})
-        output = super(NonFieldErrorsNode, self).render(context)
-        context.pop()
-        return output
+        with update_context(context, {'non_field_errors': errors}):
+            return super(NonFieldErrorsNode, self).render(context)
 
 
 class FormeNode(FormeNodeBase):
@@ -352,11 +337,8 @@ class FormeNode(FormeNodeBase):
             context_variable = 'form'
             forms = forms[0]
 
-        context.update({context_variable: forms})
-        output = super(FormeNode, self).render(context)
-        context.pop()
-
-        return output
+        with update_context(context, {context_variable: forms}):
+            return super(FormeNode, self).render(context)
 
 
 forme_nodes = (FormeNode, NonFieldErrorsNode, HiddenFieldsNode, FieldsetNode,

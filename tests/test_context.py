@@ -5,7 +5,14 @@ import pytest
 from django import forms
 from django import template
 
-from forme.context import Label
+from forme.context import Label, update_context
+
+
+def test_push_context():
+    context = template.Context({'field': 'Foo'})
+    with update_context(context, {'field': 'Bar'}):
+        assert context['field'] == 'Bar'
+    assert context['field'] == 'Foo'
 
 
 class TestLabel:

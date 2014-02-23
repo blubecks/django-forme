@@ -1,8 +1,16 @@
 # coding: utf-8
 from __future__ import unicode_literals
 from collections import namedtuple
+from contextlib import contextmanager
 
 from django.utils.encoding import python_2_unicode_compatible
+
+
+@contextmanager
+def update_context(context, push):
+    context.update(push)
+    yield
+    context.pop()
 
 
 @python_2_unicode_compatible
