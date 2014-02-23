@@ -64,8 +64,7 @@ class FormeNodeBase(template.Node):
         return (node for node in self.nodelist if isinstance(node, nodetype))
 
     def get_template(self, tag, target, context):
-        self.templates[tag] = self.resolve_template_keys(
-            self.templates[tag], context)
+        self.resolve_template_keys(self.templates[tag], context)
 
         try:
             tmpl = self.templates[tag][target]
@@ -110,7 +109,6 @@ class FormeNodeBase(template.Node):
             if isinstance(target, template.Variable):
                 del templates[target]
                 templates[target.resolve(context)] = tmpl
-        return templates
 
     def update_templates(self):
         for node in self.get_direct_child_nodes(self.all_forme_nodes):
