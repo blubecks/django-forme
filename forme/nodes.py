@@ -4,7 +4,8 @@ from collections import defaultdict
 
 from django import template
 from django.utils.datastructures import SortedDict
-from django.utils.safestring import mark_safe
+
+from forme.context import Label
 
 
 class FormeNodeBase(template.Node):
@@ -207,11 +208,7 @@ class LabelNode(FormeNodeBase):
         self.target = field.name
 
         context.update({
-            'label': {
-                'id': field.id_for_label,
-                'label': field.label,
-                'tag': mark_safe(field.label_tag()),
-            },
+            'label': Label.create(field),
         })
         output = super(LabelNode, self).render(context)
         context.pop()

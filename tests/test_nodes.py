@@ -2,13 +2,13 @@
 from __future__ import unicode_literals
 import copy
 
-import itertools as I
 import mock
 import pytest
 from django import forms
 from django import template
 
 from forme import nodes
+from forme.context import Label
 from forme.parser import FormeParser
 from forme.nodes import FormeNode
 
@@ -230,9 +230,7 @@ class TestNodeRender:
 
         field = context['field']
         label = context['label']
-        assert label['id'] == field.id_for_label
-        assert label['label'] == field.label
-        assert label['tag'] == field.label_tag()
+        assert label == Label.create(field)
 
     def test_hiddenfields_no_fields(self):
         node = nodes.HiddenFieldsNode('hiddenfields', '', '')
