@@ -30,6 +30,9 @@ class VariableKey(object):
         else:
             return self.resolved == other
 
+    def __hash__(self):
+        return hash(self.variable)
+
     def __repr__(self):
         msg = "<VariableKey variable: {0}, resolved: {1}>"
         return msg.format(self.variable, self.resolved)
