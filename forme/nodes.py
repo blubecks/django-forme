@@ -96,12 +96,6 @@ class FormeNodeBase(template.Node):
                .format(self.tag_name))
         raise template.TemplateSyntaxError(msg)
 
-    def resolve_template_keys(self, templates, context):
-        for target, tmpl in templates.items():
-            if isinstance(target, template.Variable):
-                del templates[target]
-                templates[target.resolve(context)] = tmpl
-
     def update_styles(self):
         for node in self.get_direct_child_nodes(self.all_forme_nodes):
             node.parent = self
