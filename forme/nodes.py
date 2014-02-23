@@ -1,11 +1,10 @@
 # coding: utf-8
 from __future__ import unicode_literals
-from collections import defaultdict
 
 from django import template
-from django.utils.datastructures import SortedDict
 
 from forme.context import Label, update_context
+from forme.styles import Style
 
 
 class FormeNodeBase(template.Node):
@@ -24,26 +23,23 @@ class FormeNodeBase(template.Node):
         if self.tag_name == 'forme' and self.target:
             # Rendering forme, load default style
             from forme import loader
-            templates = loader.get_default_style()
+            styles = loader.get_default_style()
 
             # Workaround for unsubscriptable SimpleLazyObject in Dj1.5
-            if hasattr(templates, '_wrapped'):
-                bool(templates)
-                self.templates = templates._wrapped
+            if hasattr(styles, '_wrapped'):
+                bool(styles)
+                self.styles = styles._wrapped
             else:
-                self.templates = templates
+                self.styles = styles
         else:
-            # Defining forme style.
-            # TODO: Allow extending existing styles
-            # (eg. {% forme style "bare" using %})
-            self.templates = defaultdict(SortedDict)
+            self.styles = Style()
 
         self.validate_child_nodes()
-        self.update_templates()
+        self.update_styles()
 
         if self.tag_name == 'forme':
             if self.action == 'using':
-                self.templates['forme'][''] = self.nodelist
+                self.styles['forme'] = self.nodelist
 
             # Trigger nodes cleanup
             self.clean_nodelist()
@@ -64,10 +60,11 @@ class FormeNodeBase(template.Node):
         return (node for node in self.nodelist if isinstance(node, nodetype))
 
     def get_template(self, tag, target, context):
-        self.resolve_template_keys(self.templates[tag], context)
+        self.styles.resolve(tag, context)
+        print('Looking for', tag, target, 'in', self.tag_name)
 
         try:
-            tmpl = self.templates[tag][target]
+            tmpl = self.styles[tag, target]
         except KeyError:
             if self.parent:
                 tmpl = self.parent.get_template(tag, target, context)
@@ -87,18 +84,15 @@ class FormeNodeBase(template.Node):
         if self.nodelist:
             return self.nodelist.render(context)
         else:
-            possible_targets = ['']
-            if self.tag_name != 'forme':
-                if isinstance(self.target, list):
-                    target = self.target[0] if len(self.target) else None
-                else:
-                    target = self.target
-                possible_targets.insert(0, target)
+            if isinstance(self.target, list):
+                target = self.target[0] if len(self.target) else None
+            else:
+                target = self.target
 
-            for possibility in possible_targets:
-                tmpl = self.get_template(self.tag_name, possibility, context)
-                if tmpl:
-                    return tmpl.render(context)
+            tmpl = self.get_template(self.tag_name, target, context)
+            print(tmpl)
+            if tmpl:
+                return tmpl.render(context)
 
         msg = ('Missing template for tag {0}'
                .format(self.tag_name))
@@ -110,7 +104,7 @@ class FormeNodeBase(template.Node):
                 del templates[target]
                 templates[target.resolve(context)] = tmpl
 
-    def update_templates(self):
+    def update_styles(self):
         for node in self.get_direct_child_nodes(self.all_forme_nodes):
             node.parent = self
 
@@ -120,10 +114,10 @@ class FormeNodeBase(template.Node):
             # Define templates for all targets.
             if node.target:
                 for target in node.target:
-                    self.templates[node.tag_name][target] = node.nodelist
+                    self.styles[node.tag_name, target] = node.nodelist
             # Define default template.
             elif node.action == 'using':
-                self.templates[node.tag_name][''] = node.nodelist
+                self.styles[node.tag_name] = node.nodelist
 
     def validate_child_nodes(self):
         child_nodes = self.get_direct_child_nodes(self.all_forme_nodes)

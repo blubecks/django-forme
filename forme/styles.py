@@ -20,7 +20,7 @@ class VariableKey(object):
         self.resolved = self.variable.resolve(context)
 
     def __eq__(self, other):
-        print(other)
+        print(self, other)
         if isinstance(other, VariableKey):
             if self.resolved is Unresolved:
                 return self.variable.var == other.variable.var
@@ -37,12 +37,18 @@ class VariableKey(object):
 
 
 class VariableDict(dict):
+    def __getitem__(self, item):
+        try:
+            return next(value for key, value in self.items() if key == item)
+        except StopIteration:
+            raise KeyError(item)
+
     def __contains__(self, item):
         return any(True for key in self if key == item)
 
     def resolve(self, context):
-        for variable, value in self:
-            if isinstance(variable, template.Variable):
+        for variable in self.keys():
+            if isinstance(variable, VariableKey):
                 variable.resolve(context)
 
 
@@ -79,8 +85,16 @@ class Style(object):
         else:
             del self._data[key.tag][key.target]
 
+    def __repr__(self):
+        return "<Style {0}".format(self._data)
+
     @classmethod
     def _normalize_key(cls, key):
         if not isinstance(key, tuple):
             key = (key, Default)
+        elif isinstance(key[1], template.Variable):
+            key = (key[0], VariableKey(key[1]))
         return Variant(*key)
+
+    def resolve(self, tag, context):
+        self._data[tag].resolve(context)
