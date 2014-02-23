@@ -26,7 +26,7 @@ def load_style(template_name):
             'Only one "forme" tag can be present. {count} found in {tmpl}'
             .format(count=len(forme_node), tmpl=template_name))
 
-    return forme_node[0].templates
+    return forme_node[0].styles
 
 
 def preload_styles(styles_config=None):

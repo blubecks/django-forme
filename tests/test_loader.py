@@ -5,8 +5,8 @@ import pytest
 from django.template import Template, TemplateDoesNotExist
 
 from forme.exceptions import FormeInvalidTemplate
-from forme.nodes import FormeNode
 from forme.loader import load_style, preload_styles
+from forme.styles import Style
 
 
 def test_load_style():
@@ -17,7 +17,7 @@ def test_load_style():
     template = Template(template_string)
     style = load_style(template)
 
-    assert isinstance(style, dict)
+    assert isinstance(style, Style)
 
 
 def test_load_style_multiple_tags():
@@ -49,4 +49,4 @@ def test_preload_styles_invalid_template():
 def test_preload_styles():
     styles = preload_styles()
     for node in styles.values():
-        assert isinstance(node, dict)
+        assert isinstance(node, Style)
