@@ -125,7 +125,7 @@ class TestNodeTemplates:
     def test_empty_templates(self):
         tmpl = '{% forme using %}{% endforme %}'
         node = tag2nodes(tmpl)[0]
-        assert node.styles.keys()[0].tag == 'forme'
+        assert 'forme' in node.styles
 
     def test_default_field_template(self):
         tmpl = '{% forme using %}{% field using %}{% endfield %}{% endforme %}'
@@ -141,8 +141,8 @@ class TestNodeTemplates:
         forme = tag2nodes(tmpl)[0]
         assert 'field', '"username"' in forme.styles
 
-    @pytest.skip('Ordering will be reimplemented.')
     def test_template_order_preserved(self):
+        pytest.skip('Ordering will be reimplemented.')
         tmpl = ('{% forme using %}{% field "username" using %}{% endfield %}'
                 '{% field "password" using %}{% endfield %}{% endforme %}')
         forme = tag2nodes(tmpl)[0]
