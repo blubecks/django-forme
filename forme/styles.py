@@ -20,7 +20,6 @@ class VariableKey(object):
         self.resolved = self.variable.resolve(context)
 
     def __eq__(self, other):
-        print(self, other)
         if isinstance(other, VariableKey):
             if self.resolved is Unresolved:
                 return self.variable.var == other.variable.var

@@ -25,12 +25,9 @@ def test_ellipsis():
     style['forme', 'py'] = 'Fubar'
     assert len(style['forme', :]) == 3
 
-    print('Deleting single')
     del style['forme', 'py']
-    print('Deleted')
     assert len(style['forme', :]) == 2
 
-    print('Deleting slice')
     del style['forme', :]
     assert 'forme' not in style
 

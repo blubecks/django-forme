@@ -61,7 +61,6 @@ class FormeNodeBase(template.Node):
 
     def get_template(self, tag, target, context):
         self.styles.resolve(tag, context)
-        print('Looking for', tag, target, 'in', self.tag_name)
 
         try:
             tmpl = self.styles[tag, target]
@@ -90,7 +89,6 @@ class FormeNodeBase(template.Node):
                 target = self.target
 
             tmpl = self.get_template(self.tag_name, target, context)
-            print(tmpl)
             if tmpl:
                 return tmpl.render(context)
 
