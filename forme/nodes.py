@@ -10,8 +10,8 @@ from forme.styles import Style
 class FormeNodeBase(template.Node):
     tag_name = None
 
-    direct_child_nodes = ()
-    valid_child_nodes = ()
+    child_nodes = ()
+    template_nodes = ()
     all_forme_nodes = ()
 
     def __init__(self, target=None, action=None, nodelist=None):
@@ -56,7 +56,7 @@ class FormeNodeBase(template.Node):
 
     def get_direct_child_nodes(self, nodetype=None):
         if not nodetype:
-            nodetype = self.valid_child_nodes
+            nodetype = self.template_nodes
         return (node for node in self.nodelist if isinstance(node, nodetype))
 
     def get_template(self, tag, target, context):
@@ -75,9 +75,7 @@ class FormeNodeBase(template.Node):
         if not node:
             node = self
 
-        direct_nodes = self.direct_child_nodes or self.valid_child_nodes
-        indirect_nodes = tuple(set(self.all_forme_nodes) - set(direct_nodes))
-        return isinstance(node, indirect_nodes)
+        return isinstance(node, self.template_nodes)
 
     def render(self, context):
         if self.nodelist:
@@ -103,13 +101,14 @@ class FormeNodeBase(template.Node):
             if node.action != 'using':
                 continue
 
+            tmpl = Style(template=node.nodelist)
             # Define templates for all targets.
             if node.target:
                 for target in node.target:
-                    self.styles[node.tag_name, target] = node.nodelist
+                    self.styles[node.tag_name, target] = tmpl
             # Define default template.
             elif node.action == 'using':
-                self.styles[node.tag_name] = node.nodelist
+                self.styles[node.tag_name] = tmpl
 
     def validate_child_nodes(self):
         child_nodes = self.get_direct_child_nodes(self.all_forme_nodes)
@@ -117,9 +116,10 @@ class FormeNodeBase(template.Node):
         if not child_nodes:
             return []
 
-        if self.valid_child_nodes:
+        valid_nodes = self.template_nodes + self.child_nodes
+        if valid_nodes:
             invalid_nodes = (node for node in child_nodes
-                             if not isinstance(node, self.valid_child_nodes))
+                             if not isinstance(node, valid_nodes))
         else:
             # No child nodes are allowed
             invalid_nodes = child_nodes
@@ -202,7 +202,7 @@ class RowNode(FormeNodeBase):
 
     """
     tag_name = 'row'
-    valid_child_nodes = (FieldNode, LabelNode, ErrorsNode)
+    child_nodes = FieldNode, LabelNode, ErrorsNode
 
     def __repr__(self):
         return '<Row node>'
@@ -237,8 +237,8 @@ class FieldsetNode(FormeNodeBase):
 
     """
     tag_name = 'fieldset'
-    direct_child_nodes = (RowNode,)
-    valid_child_nodes = direct_child_nodes + RowNode.valid_child_nodes
+    child_nodes = (RowNode,)
+    template_nodes = RowNode.child_nodes + RowNode.template_nodes
 
     def __repr__(self):
         return '<Fieldset node>'
@@ -302,8 +302,8 @@ class FormeNode(FormeNodeBase):
     """
     tag_name = 'forme'
 
-    direct_child_nodes = HiddenFieldsNode, NonFieldErrorsNode, FieldsetNode
-    valid_child_nodes = direct_child_nodes + FieldsetNode.valid_child_nodes
+    child_nodes = HiddenFieldsNode, NonFieldErrorsNode, FieldsetNode
+    template_nodes = FieldsetNode.child_nodes + FieldsetNode.template_nodes
 
     def __init__(self, target=None, action=None, nodelist=None):
         if not target and not action:

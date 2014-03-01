@@ -18,8 +18,9 @@ class VariableDict(dict):
 
 
 class Style(object):
-    def __init__(self):
+    def __init__(self, template=None):
         self._data = defaultdict(VariableDict)
+        self.template = template
 
     def __contains__(self, key):
         key = self._normalize_key(key)
@@ -52,6 +53,10 @@ class Style(object):
 
     def __repr__(self):
         return "<Style {0}".format(self._data)
+
+    def render(self, context):
+        if self.template:
+            return self.template.render(context)
 
     @classmethod
     def _normalize_key(cls, key):

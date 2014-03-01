@@ -76,8 +76,9 @@ class TestChildNodes:
                 .format(tag=tag, string=string))
 
     def valid_tags(self, tag):
-        return [self.nodes_tag_map[node] for node in
-                nodes.tag_map[tag].valid_child_nodes]
+        node = nodes.tag_map[tag]
+        child_nodes = node.template_nodes + node.child_nodes
+        return [self.nodes_tag_map[node] for node in child_nodes]
 
     def invalid_tags(self, tag):
         return set(self.tags) - set(self.valid_tags(tag))
@@ -165,7 +166,7 @@ class TestNodeTemplates:
         fieldset = forme.nodelist.get_nodes_by_type(nodes.FieldsetNode)[0]
 
         # Get content of first node (TextNode) in field's nodelist
-        text_node = lambda node: node.styles['field'][0].s
+        text_node = lambda node: node.styles['field'].template[0].s
         assert text_node(forme) == 'Parent'
         assert text_node(fieldset) == 'Child'
 
