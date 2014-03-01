@@ -39,17 +39,17 @@ class FormeNodeBase(template.Node):
 
         if self.tag_name == 'forme':
             if self.action == 'using':
-                self.styles['forme'] = self.nodelist
+                self.styles['forme'] = Style(template=self.nodelist)
 
             # Trigger nodes cleanup
             self.clean_nodelist()
 
     def clean_nodelist(self):
         if self.action == 'replace':
-            self.nodelist = template.NodeList()
+            self.nodelist[:] = []
         else:
-            self.nodelist[:] = template.NodeList(
-                [node for node in self.nodelist if not self.is_template(node)])
+            self.nodelist[:] = [node for node in self.nodelist
+                                if not self.is_template(node)]
 
         for node in self.get_direct_child_nodes():
             node.clean_nodelist()
