@@ -8,50 +8,13 @@ Variant = namedtuple('Variant', 'tag target')
 
 
 class Default: pass
-class Unresolved: pass
-
-
-class VariableKey(object):
-    def __init__(self, variable):
-        self.variable = variable
-        self.resolved = Unresolved
-
-    def resolve(self, context):
-        self.resolved = self.variable.resolve(context)
-
-    def __eq__(self, other):
-        if isinstance(other, VariableKey):
-            if self.resolved is Unresolved:
-                return self.variable.var == other.variable.var
-            else:
-                return self.resolved == other.resolved
-        elif isinstance(other, template.Variable):
-            return self.variable.var == other.var
-        else:
-            return self.resolved == other
-
-    def __hash__(self):
-        return hash(self.variable)
-
-    def __repr__(self):
-        msg = "<VariableKey variable: {0}, resolved: {1}>"
-        return msg.format(self.variable, self.resolved)
 
 
 class VariableDict(dict):
-    def __getitem__(self, item):
-        try:
-            return next(value for key, value in self.items() if key == item)
-        except StopIteration:
-            raise KeyError(item)
-
-    def __contains__(self, item):
-        return any(True for key in self if key == item)
-
     def resolve(self, context):
-        for variable in self.keys():
-            if isinstance(variable, VariableKey):
-                variable.resolve(context)
+        for variable, tmpl in self.items():
+            if isinstance(variable, template.Variable):
+                self[variable.resolve(context)] = tmpl
 
 
 class Style(object):
@@ -94,8 +57,6 @@ class Style(object):
     def _normalize_key(cls, key):
         if not isinstance(key, tuple):
             key = (key, Default)
-        elif isinstance(key[1], template.Variable):
-            key = (key[0], VariableKey(key[1]))
         return Variant(*key)
 
     def resolve(self, tag, context):

@@ -30,28 +30,3 @@ def test_ellipsis():
 
     del style['forme', :]
     assert 'forme' not in style
-
-
-class TestVariableKey:
-    def test_variable_key(self):
-        var = styles.VariableKey(template.Variable("foo"))
-        unresolved_hash = hash(var)
-        assert var == template.Variable("foo")
-
-        var.resolve(template.Context({"foo": "bar"}))
-        assert var == "bar"
-        assert hash(var) == unresolved_hash
-
-    def test_key_dict(self):
-        var = styles.VariableKey(template.Variable("foo"))
-        test_dict = styles.VariableDict()
-        test_dict[var] = 'Template'
-        assert var in test_dict
-        assert "bar" not in test_dict
-
-        var.resolve(template.Context({"foo": "bar"}))
-        assert var in test_dict
-        assert "bar" in test_dict
-
-
-
