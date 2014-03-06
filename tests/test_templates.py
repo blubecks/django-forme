@@ -67,6 +67,8 @@ class TestTemplates:
         params = dict([(node.name, normalize_text(node.nodelist.render(ctx)))
                        for node in nodes])
 
+        if 'skip' in params:
+            raise pytest.skip(normalize_text(params['skip']))
         assert params['template'] == params['expected']
 
     @pytest.mark.profiling
