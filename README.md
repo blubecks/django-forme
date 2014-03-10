@@ -57,7 +57,7 @@ I process them) without messing with form definition:
 ```
 
 … and so on. Work on progress, ping me if interested, poke me if I'm reinventing
-wheel of kick me if you think this approach is totally wrong.
+wheel or kick me if you think this approach is totally wrong.
 
 These are real-world examples I'm dealing with in one project right now,
 but any of existing tools don't allow me to do so.
