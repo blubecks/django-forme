@@ -79,7 +79,7 @@ class FormeNodeBase(template.Node):
 
     def render(self, context):
         if self.nodelist:
-            return self.nodelist.render(context)
+            tmpl = self.nodelist
         else:
             if isinstance(self.target, list):
                 target = self.target[0] if len(self.target) else None
@@ -87,12 +87,14 @@ class FormeNodeBase(template.Node):
                 target = self.target
 
             tmpl = self.get_template(self.tag_name, target, context)
-            if tmpl:
-                return tmpl.render(context)
 
-        msg = ('Missing template for tag {0}'
-               .format(self.tag_name))
-        raise template.TemplateSyntaxError(msg)
+        if tmpl:
+            with update_context(context, {'forme_style': self.styles}):
+                return tmpl.render(context)
+        else:
+            msg = ('Missing template for tag {0}'
+                   .format(self.tag_name))
+            raise template.TemplateSyntaxError(msg)
 
     def update_styles(self):
         for node in self.get_direct_child_nodes(self.all_forme_nodes):

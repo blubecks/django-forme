@@ -62,6 +62,11 @@ class Style(object):
     def _normalize_key(cls, key):
         if not isinstance(key, tuple):
             key = (key, Default)
+        else:
+            tag, target = key
+            if not target:
+                target = Default
+            key = (tag, target)
         return Variant(*key)
 
     def resolve(self, tag, context):
