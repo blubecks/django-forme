@@ -1,7 +1,6 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
-import os.path
 import pytest
 from mock import patch, Mock
 
@@ -17,6 +16,11 @@ def pytest_configure():
         INSTALLED_APPS=('forme',)
     )
 
+    import django
+    major, minor = django.VERSION[0:2]
+    if major == 1 and minor >= 7:
+        django.setup()
+
 
 @pytest.fixture
 def node_mock(request):
@@ -30,4 +34,3 @@ def node_mock(request):
 @pytest.fixture
 def forme():
     return FormeParser([], Token(TOKEN_BLOCK, 'tag'))
-
