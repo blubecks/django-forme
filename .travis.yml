@@ -1,23 +1,18 @@
 language: python
 python:
-  - 2.6
   - 2.7
   - 3.2
   - 3.3
-  - 3.4
 
 env:
-  - DJANGO="Django<1.6"
   - DJANGO="Django<1.7"
   - DJANGO=https://github.com/django/django/tarball/master
 
 matrix:
-  exclude:
+  include:
     - python: 2.6
-      env: DJANGO="Django<1.7"
-    - python: 2.6
-      env: DJANGO=https://github.com/django/django/tarball/master
-      
+      env: DJANGO="Django<1.6"
+
 
 install:
   - pip install "$DJANGO"
