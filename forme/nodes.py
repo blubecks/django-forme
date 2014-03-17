@@ -71,30 +71,27 @@ class FormeNodeBase(template.Node):
                 tmpl = None
         return tmpl
 
-    def is_template(self, node):
-        if not node:
-            node = self
-
-        return isinstance(node, self.template_nodes)
+    def is_template(self, node=None):
+        return isinstance(node or self, self.template_nodes)
 
     def render(self, context):
-        if self.nodelist:
-            tmpl = self.nodelist
-        else:
+        if not self.nodelist:
             if isinstance(self.target, list):
                 target = self.target[0] if len(self.target) else None
             else:
                 target = self.target
 
             tmpl = self.get_template(self.tag_name, target, context)
-
-        if tmpl:
-            with update_context(context, {'forme_style': self.styles}):
-                return tmpl.render(context)
         else:
+            tmpl = self.nodelist
+
+        if not tmpl:
             msg = ('Missing template for tag {0}'
                    .format(self.tag_name))
             raise template.TemplateSyntaxError(msg)
+
+        with update_context(context, {'forme_style': self.styles}):
+            return tmpl.render(context)
 
     def update_styles(self):
         for node in self.get_direct_child_nodes(self.all_forme_nodes):
@@ -331,7 +328,7 @@ class FormeNode(FormeNodeBase):
 
 forme_nodes = (FormeNode, NonFieldErrorsNode, HiddenFieldsNode, FieldsetNode,
                RowNode, ErrorsNode, LabelNode, FieldNode)
-tag_map = dict([(node.tag_name, node) for node in forme_nodes])
+tag_map = dict((node.tag_name, node) for node in forme_nodes)
 
 FormeNodeBase.all_forme_nodes = forme_nodes
 
