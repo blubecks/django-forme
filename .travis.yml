@@ -9,14 +9,14 @@ python:
 env:
   - DJANGO="Django<1.6"
   - DJANGO="Django<1.7"
-  - DJANGO="git+https://github.com/django/django/tarball/master#egg=django"
+  - DJANGO=https://github.com/django/django/tarball/master
 
 matrix:
   exclude:
     - python: 2.6
       env: DJANGO="Django<1.7"
     - python: 2.6
-      env: DJANGO="git+https://github.com/django/django/tarball/master#egg=django"
+      env: DJANGO=https://github.com/django/django/tarball/master
       
 
 install:
