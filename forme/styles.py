@@ -12,9 +12,11 @@ class Default: pass
 
 class VariableDict(dict):
     def resolve(self, context):
+        update = {}
         for variable, tmpl in self.items():
             if isinstance(variable, template.Variable):
-                self[variable.resolve(context)] = tmpl
+                update[variable.resolve(context)] = tmpl
+        self.update(**update)
 
 
 class Style(object):

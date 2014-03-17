@@ -1,16 +1,28 @@
 language: python
 python:
-  - "2.6"
-  - "2.7"
-  - "3.2"
-  - "3.3"
+  - 2.6
+  - 2.7
+  - 3.2
+  - 3.3
+  - 3.4
 
 env:
-  - DJANGO_VERSION_BELOW=1.6
-  - DJANGO_VERSION_BELOW=1.7
+  - DJANGO="Django<1.6"
+  - DJANGO="Django<1.7"
+  - DJANGO="git+https://github.com/django/django/tarball/master#egg=django"
+
+matrix:
+  exclude:
+    - python: 2.6
+      env: DJANGO="Django<1.7"
+    - python: 2.6
+      env: DJANGO="git+https://github.com/django/django/tarball/master#egg=django"
+      
 
 install:
-  - pip install "Django<$DJANGO_VERSION_BELOW"
+  - pip install "$DJANGO"
   - pip install .
 
-script: py.test
+script:
+  - django-admin.py --version
+  - py.test
