@@ -119,3 +119,37 @@ Each tag can be written either as `paired` or `unpaired` one depending on contex
 Usage of these tags will be discussed in following sections. This definition
 was mentioned to clarify meaning and structure of `forme` tags.
 
+Use or replace
+--------------
+
+Consider following example:
+
+.. code-block:: html+django
+
+    {% forme form replace %}
+        {% input "password" using %}
+            <input class="password" type="password" name="{{ field.name }}" id="{{ field.id }}" />
+        {% endinput %}
+    {% endforme %}
+
+and the result:
+
+.. code-block:: html
+
+    <label for="id_username">Username</label>
+    <input type="text" name="username" id="id_username" />
+    <label for="id_password">Password</label>
+    <input class="password" type="password" name="password" id="id_password" />
+
+``forme`` tag contains new keyword **replace**. It says: "**Replace** parts
+of default template with following templates". It also makes ``forme`` tag
+paired one ending with ``{% endforme %}``. Everything between will be considered
+as an form element template.
+
+The first (and only) tag inside is input *password*. This tag contains **using**
+keyword which says: "**Use** this html code as an template to render input."
+
+In other words: ``forme`` tag will render two fields, *username* and *password*.
+*Username* will render label and input using default templates, but *password*
+will render label using default template and input using template specified
+inside ``input "password"`` tag.
