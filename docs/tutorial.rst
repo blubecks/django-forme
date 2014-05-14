@@ -58,7 +58,7 @@ Result would be:
     <label for="id_password">Password</label>
     <input type="password" name="password" id="id_password">
 
-We can specify default template to render our form using ``template=`` keyword:
+We can specify default template to render our form using **template** keyword:
 
 .. code-block:: html+django
 
@@ -77,3 +77,45 @@ We can specify default template to render our form using ``template=`` keyword:
 
 … and that is basically all we can do with ``forme`` tag only. More real use
 cases come when we introduce other template tags.
+
+``forme`` tags hierarchy
+------------------------
+
+Forms in general are structured in hierarchy:
+
+.. code-block:: html
+
+    <form>
+        <hidden fields>
+        <non-field errors>
+        <fieldset>
+            <field>
+                <label>
+                <input>
+                <field errors>
+            </field>
+        </fieldset>
+    </form>
+
+Field errors and non-field errors are relevant for bound forms only. Grouping
+fields into fieldsets is optional. This structure represents also ``forme`` tags
+hierarchy with corresponding tags:
+
+    ================        ====================
+    Element                 ``forme`` tag
+    ================        ====================
+    form                    ``{% forme %}``
+    hidden fields           ``{% hiddenfields %}``
+    non-field errors        ``{% nonfielderrors %}``
+    fieldset                ``{% fieldset %}``
+    field                   ``{% field %}``
+    label                   ``{% label %}``
+    input                   ``{% input %}``
+    field errors            ``{% errors %}``
+    ================        ====================
+
+Each tag can be written either as `paired` or `unpaired` one depending on context.
+
+Usage of these tags will be discussed in following sections. This definition
+was mentioned to clarify meaning and structure of `forme` tags.
+
