@@ -1,0 +1,79 @@
+Tutorial
+========
+
+The aim of ``django-forme`` is to allow customization of form rendering in
+templates rather than in ``forms.py`` (or other Python source file). Define
+default templates using your css framework markup and only alter rendering of
+those fields which need special markup.
+
+Getting started
+---------------
+
+1. Install ``django-forme`` using pip:
+
+.. code-block:: shell
+
+    pip install django-forme
+
+2. Add ``forme`` to ``INSTALLED_APPS``:
+
+.. code-block:: python
+
+    INSTALLED_APPS = (
+        ...
+        'forme',
+    )
+
+3. Load ``forme`` tags in template:
+
+.. code-block:: html+django
+
+    {% load forme %}
+
+Basic example
+-------------
+
+Suppose we have following login form:
+
+.. code-block:: python
+
+    class LoginForm(forms.Form):
+        username = forms.CharField()
+        password = forms.CharField(widget=forms.PasswordInput)
+
+
+The most trivial use case is rendering whole form using default template.
+Instead of writing ``{{ form }}`` in template, we use ``forme`` tag:
+
+.. code-block:: html+django
+
+    {% forme form %}
+
+Result would be:
+
+.. code-block:: html
+
+    <label for="id_username">Username</label>
+    <input type="text" name="username" id="id_username">
+    <label for="id_password">Password</label>
+    <input type="password" name="password" id="id_password">
+
+We can specify default template to render our form using ``template=`` keyword:
+
+.. code-block:: html+django
+
+    {% forme form template="bootstrap" %}
+
+.. code-block:: html
+
+    <div class="form-group">
+        <label for="id_username">Username</label>
+        <input type="text" class="form-control" id="id_username" name="username">
+    </div>
+    <div class="form-group">
+        <label for="id_password">Password</label>
+        <input type="password" class="form-control" id="id_password" name="password">
+    </div>
+
+… and that is basically all we can do with ``forme`` tag only. More real use
+cases come when we introduce other template tags.
