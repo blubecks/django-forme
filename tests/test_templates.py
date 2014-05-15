@@ -7,9 +7,9 @@ import os.path
 import sys
 import timeit
 import pytest
+from bs4 import BeautifulSoup
 
 from django import template
-from lxml.html import fragments_fromstring
 
 test_dir = os.path.join(os.path.dirname(__file__), 'test_templates')
 sys.path.insert(0, test_dir)
@@ -66,8 +66,8 @@ class TestTemplates:
         if 'skip' in params:
             raise pytest.skip(params['skip'])
 
-        template = fragments_fromstring(params['template'])
-        expected = fragments_fromstring(params['expected'])
+        template = BeautifulSoup(params['template']).findAll()
+        expected = BeautifulSoup(params['expected']).findAll()
         for given, should_be in zip(template, expected):
             assert given.tag == should_be.tag
             assert given.attrib == should_be.attrib

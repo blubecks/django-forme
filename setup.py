@@ -39,7 +39,7 @@ setup(
     cmdclass={'test': PyTest},
     tests_require=[
         'pytest',
-        'lxml',
+        'beautifulsoup4',
         'mock',
     ],
 
