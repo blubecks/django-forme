@@ -1,8 +1,22 @@
 # coding: utf-8
 from __future__ import unicode_literals
 
+import sys
 from setuptools import setup, find_packages
+from setuptools.command.test import test as TestCommand
+
 from forme import __version__
+
+
+class PyTest(TestCommand):
+    def finalize_options(self):
+        TestCommand.finalize_options(self)
+        self.test_args = []
+        self.test_suite = True
+
+    def run_tests(self):
+        import pytest
+        sys.exit(pytest.main(self.test_args))
 
 setup(
     name='forme',
@@ -21,10 +35,11 @@ setup(
     install_requires=[
         'django',
     ],
+
+    cmdclass={'test': PyTest},
     tests_require=[
-        'mock',
-        'lxml',
         'pytest',
-        'pytest-django',
+        'lxml',
+        'mock',
     ]
 )

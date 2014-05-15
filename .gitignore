@@ -6,6 +6,7 @@ dist/
 .tox/
 .pip-cache/
 *.egg-info/
+*.egg
 
 # PyCharm project dir
 .idea/
