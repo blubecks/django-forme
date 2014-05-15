@@ -6,9 +6,10 @@ import os
 import os.path
 import sys
 import timeit
+import pytest
 
 from django import template
-import pytest
+from lxml.html import fragments_fromstring
 
 test_dir = os.path.join(os.path.dirname(__file__), 'test_templates')
 sys.path.insert(0, test_dir)
@@ -35,11 +36,6 @@ def pytest_generate_tests(metafunc):
     metafunc.parametrize('case,template_name', args, ids=ids)
 
 
-def normalize_text(lines):
-    lines = [line.strip() for line in lines.split('\n')]
-    return '\n'.join(filter(None, lines))
-
-
 class TestTemplates:
     def load_context(self, case):
         temp_ = __import__('{0}.context'.format(case),
@@ -64,15 +60,21 @@ class TestTemplates:
 
         from django.template.loader_tags import BlockNode
         nodes = tmpl.nodelist.get_nodes_by_type(BlockNode)
-        params = dict([(node.name, normalize_text(node.nodelist.render(ctx)))
+        params = dict([(node.name, node.nodelist.render(ctx))
                        for node in nodes])
 
         if 'skip' in params:
-            raise pytest.skip(normalize_text(params['skip']))
-        assert params['template'] == params['expected']
+            raise pytest.skip(params['skip'])
+
+        template = fragments_fromstring(params['template'])
+        expected = fragments_fromstring(params['expected'])
+        for given, should_be in zip(template, expected):
+            assert given.tag == should_be.tag
+            assert given.attrib == should_be.attrib
+            assert given.text == should_be.text
 
     @pytest.mark.profiling
-    def test_profilling(self, case, template_name):
+    def test_profiling(self, case, template_name):
         ctx = self.load_context(case)
 
         n = 1000

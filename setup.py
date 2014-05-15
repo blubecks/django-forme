@@ -23,6 +23,7 @@ setup(
     ],
     tests_require=[
         'mock',
+        'lxml',
         'pytest',
         'pytest-django',
     ]
