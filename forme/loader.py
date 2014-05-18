@@ -33,11 +33,12 @@ def preload_styles(styles_config=None):
     if not styles_config:
         styles_config = settings.FORME_STYLES
 
-    # Replace when Py2.6 won't be supported
-    # return {name: load_style(tmpl) for name, tmpl in styles_config.items()}
+    # Py2.6
     styles = {}
     for name, tmpl in styles_config.items():
         styles[name] = SimpleLazyObject(lambda: load_style(tmpl))
+    # return {name: SimpleLazyObject(lambda: load_style(tmpl))
+    #         for name, tmpl in styles_config.items()}
     return styles
 
 

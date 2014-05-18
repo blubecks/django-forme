@@ -25,7 +25,8 @@ class FormeNodeBase(template.Node):
             from forme import loader
             styles = loader.get_default_style()
 
-            # Workaround for unsubscriptable SimpleLazyObject in Dj1.5
+            # Dj1.4, Dj1.5
+            # Workaround for unsubscriptable SimpleLazyObject
             if hasattr(styles, '_wrapped'):
                 bool(styles)
                 self.styles = styles._wrapped

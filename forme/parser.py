@@ -56,16 +56,15 @@ class FormeParser(object):
                 # Only string can contain a space. Strip quotes, split strings
                 # and surround them with quotes so they resolve properly later.
                 stripped_parts = part.strip('"\'').split(' ')
-                targets.extend(('"{0}"'.format(p) for p in stripped_parts))
+                targets.extend('"{0}"'.format(p) for p in stripped_parts)
             else:
                 # Either variable or string with single name
                 targets.append(part)
 
-        targets = [template.Variable(target) for target in targets]
-        return targets
+        return [template.Variable(target) for target in targets]
 
     def parse_nodelist(self):
-        end_node = ''.join(['end', self.tag_name])
+        end_node = 'end' + self.tag_name
         nodelist = self.parser.parse((end_node,))
         self.parser.delete_first_token()
         return nodelist
