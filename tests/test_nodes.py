@@ -171,7 +171,7 @@ class TestNodeTemplates:
         assert text_node(fieldset) == 'Child'
 
 
-class TestNodeRender:
+class TestNodeBase(object):
     @pytest.fixture
     def field(self):
         field = forms.forms.BoundField(forms.Form(), forms.Field(), 'field')
@@ -207,6 +207,8 @@ class TestNodeRender:
             flat.update(ctx)
         return flat
 
+
+class TestFieldErrorsNode(TestNodeBase):
     def test_fielderrors_no_errors(self, field):
         node = nodes.ErrorsNode('errors', '', '')
         assert node.render(template.Context({'field': field})) == ''
@@ -221,6 +223,8 @@ class TestNodeRender:
         assert 'errors' in context
         assert context['errors'] == context['field'].errors
 
+
+class TestLabelNode(TestNodeBase):
     def test_label(self, field, render_mock):
         node = nodes.LabelNode('label', '', '')
         node.render(template.Context({'field': field}))
@@ -233,10 +237,14 @@ class TestNodeRender:
         label = context['label']
         assert label == Label.create(field)
 
+
+class TestHiddenFieldsNode(TestNodeBase):
     def test_hiddenfields_no_fields(self):
         node = nodes.HiddenFieldsNode('hiddenfields', '', '')
         assert node.render(template.Context({'form': forms.Form()})) == ''
 
+
+class TestErrorsNoErrors(TestNodeBase):
     def test_errors_no_errors(self):
         node = nodes.NonFieldErrorsNode('nonfielderrors', '', '')
         assert node.render(template.Context({'form': forms.Form()})) == ''
