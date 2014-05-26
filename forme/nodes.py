@@ -2,8 +2,10 @@
 from __future__ import unicode_literals
 
 from django import template
+from django.forms import Field
 
 from forme.context import Label, update_context
+from forme.exceptions import FormeInvalidTemplate
 from forme.styles import Style
 
 
@@ -142,7 +144,11 @@ class FieldNode(FormeNodeBase):
         return '<Field node>'
 
     def render(self, context):
-        self.target = context['field'].name
+        if 'field' not in context:
+            raise FormeInvalidTemplate(
+                'Missing *field* in context of FieldNode. Probably'
+                ' misplaced *field* tag?')
+
         return super(FieldNode, self).render(context)
 
 
@@ -158,11 +164,15 @@ class ErrorsNode(FormeNodeBase):
         return '<Errors node>'
 
     def render(self, context):
-        errors = getattr(context['field'], 'errors', None)
+        field = context.get('field')
+        if not field:
+            raise FormeInvalidTemplate(
+                'Missing *field* in context of ErrorsNode. Probably'
+                ' misplaced *errors* tag?')
+
+        errors = getattr(field, 'errors', None)
         if not errors:
             return ''
-
-        self.target = context['field'].name
 
         with update_context(context, {'errors': errors}):
             return super(ErrorsNode, self).render(context)
@@ -185,9 +195,11 @@ class LabelNode(FormeNodeBase):
         return '<Label node>'
 
     def render(self, context):
-        field = context['field']
-
-        self.target = field.name
+        field = context.get('field')
+        if not field:
+            raise FormeInvalidTemplate(
+                'Missing *field* in context of LabelNode. Probably'
+                ' misplaced *label* tag?')
 
         with update_context(context, {'label': Label.create(field)}):
             return super(LabelNode, self).render(context)
@@ -208,23 +220,28 @@ class RowNode(FormeNodeBase):
         return '<Row node>'
 
     def render(self, context):
-        form = context['form']
+        fieldset = context.get('fieldset')
+        if not fieldset:
+            raise FormeInvalidTemplate(
+                'Missing *fieldset* in context of RowNode. Probably'
+                ' misplaced *row* tag?')
+
+        if self.target:
+            fields = []
+            for target in self.target:
+                if isinstance(target, Field):
+                    fields.append(target)
+                else:
+                    # Find field in fieldset
+                    for field in fieldset:
+                        if field.name == field:
+                            fields.append(target)
+        else:
+            fields = fieldset
 
         output = ''
-        if not self.target:
-            fields = context['fieldset_fields']
-            for field in fields:
-                with update_context(context, {'field': field}):
-                    output += super(RowNode, self).render(context)
-        else:
-            fields = [form[field.resolve(context)] for field in self.target]
-
-            if len(fields) > 1:
-                context_variable = 'fields'
-            else:
-                context_variable = 'field'
-
-            with update_context(context, {context_variable: fields}):
+        for field in fields:
+            with update_context(context, {'field': field}):
                 output += super(RowNode, self).render(context)
 
         return output
@@ -244,13 +261,18 @@ class FieldsetNode(FormeNodeBase):
         return '<Fieldset node>'
 
     def render(self, context):
-        form = context['form']
-        fields = [form[field.resolve(context)] for field in self.target]
+        form = context.get('form')
+        if not form:
+            raise FormeInvalidTemplate(
+                'Missing *form* in context of FieldsetNode. Probably'
+                ' misplaced *fieldset* tag?')
 
-        if not any(fields):
+        if self.target:
+            fields = [form[field.resolve(context)] for field in self.target]
+        else:
             fields = list(form)
 
-        with update_context(context, {'fieldset_fields': fields}):
+        with update_context(context, {'fieldset': fields}):
             return super(FieldsetNode, self).render(context)
 
 
@@ -266,7 +288,13 @@ class HiddenFieldsNode(FormeNodeBase):
         return '<HiddenFields node>'
 
     def render(self, context):
-        hidden_fields = context['form'].hidden_fields()
+        form = context.get('form')
+        if not form:
+            raise FormeInvalidTemplate(
+                'Missing *form* in context of HiddenFieldsNode. Probably'
+                ' misplaced *hiddenfields* tag?')
+
+        hidden_fields = form.hidden_fields()
         if not hidden_fields:
             return ''
 
@@ -286,7 +314,13 @@ class NonFieldErrorsNode(FormeNodeBase):
         return '<NonFieldErrors node>'
 
     def render(self, context):
-        errors = context['form'].non_field_errors()
+        form = context.get('form')
+        if not form:
+            raise FormeInvalidTemplate(
+                'Missing *form* in context of NonFieldErrorsNode. Probably'
+                ' misplaced *nonfielderrors* tag?')
+
+        errors = form.non_field_errors()
         if not errors:
             return ''
 
