@@ -132,24 +132,24 @@ class FormeNodeBase(template.Node):
             raise template.TemplateSyntaxError(msg)
 
 
-class FieldNode(FormeNodeBase):
+class InputNode(FormeNodeBase):
     """
-    Renders single field. It doesn't push any variables into context because
-    'field' variable is already pushed by row node.
+    Renders single input. It doesn't push any variables into context because
+    'field' variable is already pushed by field node.
 
     """
-    tag_name = 'field'
+    tag_name = 'input'
 
     def __repr__(self):
-        return '<Field node>'
+        return '<Input node>'
 
     def render(self, context):
         if 'field' not in context:
             raise FormeInvalidTemplate(
                 'Missing *field* in context of FieldNode. Probably'
-                ' misplaced *field* tag?')
+                ' misplaced *input* tag?')
 
-        return super(FieldNode, self).render(context)
+        return super(InputNode, self).render(context)
 
 
 class ErrorsNode(FormeNodeBase):
@@ -205,26 +205,24 @@ class LabelNode(FormeNodeBase):
             return super(LabelNode, self).render(context)
 
 
-class RowNode(FormeNodeBase):
+class FieldNode(FormeNodeBase):
     """
-    Renders single row which usualy consists of field errors, label and field.
-    It adds 'field' variable into context as reference to rendered field or
-    'fields' variable if row contains more than one field. Template itself
-    is responsible for looping over fields..
+    Renders single field which usualy consists of field errors, label and input.
+    It adds 'field' variable into context as reference to rendered field.
 
     """
-    tag_name = 'row'
-    child_nodes = FieldNode, LabelNode, ErrorsNode
+    tag_name = 'field'
+    child_nodes = InputNode, LabelNode, ErrorsNode
 
     def __repr__(self):
-        return '<Row node>'
+        return '<Field node>'
 
     def render(self, context):
         fieldset = context.get('fieldset')
         if not fieldset:
             raise FormeInvalidTemplate(
                 'Missing *fieldset* in context of RowNode. Probably'
-                ' misplaced *row* tag?')
+                ' misplaced *field* tag?')
 
         if self.target:
             fields = []
@@ -242,7 +240,7 @@ class RowNode(FormeNodeBase):
         output = ''
         for field in fields:
             with update_context(context, {'field': field}):
-                output += super(RowNode, self).render(context)
+                output += super(FieldNode, self).render(context)
 
         return output
 
@@ -254,8 +252,8 @@ class FieldsetNode(FormeNodeBase):
 
     """
     tag_name = 'fieldset'
-    child_nodes = (RowNode,)
-    template_nodes = RowNode.child_nodes + RowNode.template_nodes
+    child_nodes = (FieldNode,)
+    template_nodes = FieldNode.child_nodes + FieldNode.template_nodes
 
     def __repr__(self):
         return '<Fieldset node>'
@@ -362,7 +360,7 @@ class FormeNode(FormeNodeBase):
 
 
 forme_nodes = (FormeNode, NonFieldErrorsNode, HiddenFieldsNode, FieldsetNode,
-               RowNode, ErrorsNode, LabelNode, FieldNode)
+               FieldNode, ErrorsNode, LabelNode, InputNode)
 tag_map = dict((node.tag_name, node) for node in forme_nodes)
 
 FormeNodeBase.all_forme_nodes = forme_nodes

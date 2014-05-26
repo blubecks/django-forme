@@ -61,7 +61,7 @@ def test_forme_requires_target_or_action():
 
 
 class TestChildNodes:
-    tags = ("field errors label row fieldset"
+    tags = ("input errors label field fieldset"
             " nonfielderrors hiddenfields".split())
 
     nodes_tag_map = dict(zip(nodes.tag_map.values(),

@@ -35,30 +35,28 @@ Context:
 
   Context:
    - form: Actual rendered form
-   - fields: Set of fields to be rendered.
+   - fieldset: Set of fields to be rendered.
   {% endcomment %}
-  {% fieldset using %}{% row %}{% endfieldset %}
+  {% fieldset using %}{% field %}{% endfieldset %}
 
   {% comment %}
-  Template for rendering single form row (label + field).
+  Template for rendering single form field (label + input).
 
   Context:
    - form: Actual rendered form
-   - fields: Set of fields in rendered fieldset.
    - field: Actual field to be rendered.
   {% endcomment %}
-  {% row using %}
+  {% field using %}
     {% errors %}
     {% label %}
-    {% field %}
-  {% endrow %}
+    {% input %}
+  {% endfield %}
 
   {% comment %}
   Template for rendering field errors.
 
   Context:
    - form: Actual rendered form
-   - fields: Set of fields in rendered fieldset.
    - field: Actual field to be rendered.
    - errors: Alias to field.errors
   {% endcomment %}
@@ -69,7 +67,6 @@ Context:
 
   Context:
    - form: Actual rendered form
-   - fields: Set of fields in rendered fieldset.
    - field: Actual field to be rendered.
    - label: Label object with attributes - id, tag, label.
   {% endcomment %}
@@ -80,8 +77,7 @@ Context:
 
   Context:
    - form: Actual rendered form
-   - fields: Set of fields in rendered fieldset.
    - field: Actual field to be rendered.
   {% endcomment %}
-  {% field using %}{{ field }}{% endfield %}
+  {% input using %}{{ field }}{% endinput %}
 {% endforme %}
