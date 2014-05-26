@@ -11,7 +11,7 @@ Getting started
 
 1. Install ``django-forme`` using pip:
 
-.. code-block:: shell
+::
 
     pip install django-forme
 
